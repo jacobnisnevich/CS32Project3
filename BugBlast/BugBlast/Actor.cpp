@@ -13,7 +13,6 @@ GameObject::GameObject(StudentWorld* World, int image, int startx, int starty) :
 
 GameObject::~GameObject()
 {
-	delete m_world;
 }
 
 bool GameObject::isAlive() const
@@ -46,36 +45,50 @@ bool Character::move(int dir)
 	Level collision;
 	collision.loadLevel(getWorld()->getLevelFile(getWorld()->getLevel()));
 
+	bool moveSuccess = true;
+
 	switch (dir)
 	{
 	case KEY_PRESS_UP:
-		if (collision.getContentsOf(getX(), getY() + 1) == 5 ||
-			collision.getContentsOf(getX(), getY() + 1) == 6)
-			return false;
+		onCollision(getX(), getY() + 1, collision, moveSuccess);
+		if (moveSuccess == false)
+			return moveSuccess;
 		moveTo(getX(), getY() + 1);
 		break;
 	case KEY_PRESS_DOWN:
-		if (collision.getContentsOf(getX(), getY() - 1) == 5 ||
-			collision.getContentsOf(getX(), getY() - 1) == 6)
-			return false;
+		onCollision(getX(), getY() - 1, collision, moveSuccess);
+		if (moveSuccess == false)
+			return moveSuccess;
 		moveTo(getX(), getY() - 1);
 		break;
 	case KEY_PRESS_LEFT:
-		if (collision.getContentsOf(getX() - 1, getY()) == 5 ||
-			collision.getContentsOf(getX() - 1, getY()) == 6)
-			return false;
+		onCollision(getX() - 1, getY(), collision, moveSuccess);
+		if (moveSuccess == false)
+			return moveSuccess;
 		moveTo(getX() - 1, getY());
 		break;
 	case KEY_PRESS_RIGHT:
-		if (collision.getContentsOf(getX() + 1, getY()) == 5 ||
-			collision.getContentsOf(getX() + 1, getY()) == 6)
-			return false;
+		onCollision(getX() + 1, getY(), collision, moveSuccess);
+		if (moveSuccess == false)
+			return moveSuccess;
 		moveTo(getX() + 1, getY());
 		break;
 	default:
 		break;
 	}
 	return true;
+}
+
+void Character::onCollision(int x, int y, Level collision, bool& success)
+{
+	if (collision.getContentsOf(x, y) == 5 || collision.getContentsOf(x, y) == 6)
+	{
+		success = false;
+	}
+	else if ((collision.getContentsOf(x, y) == 3 || collision.getContentsOf(x, y) == 4) && this->getID() == IID_PLAYER)
+	{
+		this->setAlive(false);
+	}
 }
 
 // Player

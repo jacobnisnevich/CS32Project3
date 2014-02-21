@@ -5,6 +5,7 @@
 #include "GameConstants.h"
 
 class StudentWorld;
+class Level;
 
 class GameObject : public GraphObject
 {
@@ -29,6 +30,7 @@ public:
 	Character(StudentWorld* World, int image, int startx, int starty);
 	virtual void doSomething() = 0;
 	bool move(int dir);
+	void onCollision(int x, int y, Level collision, bool& success);
 };
 
 class Player : public Character

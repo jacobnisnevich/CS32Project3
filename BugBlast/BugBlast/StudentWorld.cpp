@@ -22,12 +22,12 @@ int StudentWorld::init()
 	//Initialize the data structures used to keep track of your game’s world
 	actors.clear();
 	numZumis = 0;
+	Level lev;
 
 	//Load the current maze details from a level data file (each level has its own data 
 	//file that specifies what the maze looks like for that level, as well as all the game 
 	//parameters for the level – such as what the bonus is for completing the level 
 	//quickly).
-	Level lev;
 
 	//If the current level is 0 and the first level data file level00.dat can not be 
 	//found, immediately return GWSTATUS_NO_FIRST_LEVEL. 
@@ -99,6 +99,8 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
+	Level lev;
+	lev.loadLevel(getLevelFile(getLevel()));
 	//It must ask all of the actors that are currently active in the game world to do 
 	//something (e.g., ask a Simple Zumi to move itself, ask a Bug Sprayer to count 
 	//down and possibly release Bug Spray into the maze, give the Player a chance to 
@@ -115,11 +117,13 @@ int StudentWorld::move()
 		//If the Player steps onto the same square as an Exit (after first clearing the 
 		//level of all Zumi) and completes the current level, then the move() method 
 		//should immediately: 
-
-
+		if (actors[i]->isPlayer() && lev.getContentsOf(actors[i]->getX(), actors[i]->getY()) == 1)
+		{
 			//Increase the Player’s score by the remaining bonus for the level. 
-
+			increaseScore(LevelBonus);
 			//Return a value of GWSTATUS_FINISHED_LEVEL. 
+			return GWSTATUS_FINISHED_LEVEL;
+		}
 	}
 	//It must then delete any actors that have died during this tick (e.g., a Simple Zumi 
 	//that was destroyed by Bug Spray and so should be removed from the game world, 
