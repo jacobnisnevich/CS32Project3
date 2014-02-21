@@ -129,7 +129,7 @@ int StudentWorld::move()
 		if (!actors[i]->isAlive())
 		{
 			delete actors[i];
-			if (actors[i]->getID == IID_SIMPLE_ZUMI || actors[i]->getID == IID_COMPLEX_ZUMI)
+			if (actors[i]->getID() == IID_SIMPLE_ZUMI || actors[i]->getID() == IID_COMPLEX_ZUMI)
 			{
 				numZumis--;
 			}
@@ -158,6 +158,10 @@ void StudentWorld::cleanUp()
 	//Every actor in the entire maze (the Player and every Zumi, Goodies, Bug Sprayers, Bug 
 	//Spray, Bricks, the Exit, etc.) must be deleted and removed from your StudentWorld’s 
 	//container of active objects, resulting in an empty maze.
+	for (int i = 0; i < actors.size(); i++)
+	{
+		delete actors[i];
+	}
 }
 
 int StudentWorld::getNumZumis() const

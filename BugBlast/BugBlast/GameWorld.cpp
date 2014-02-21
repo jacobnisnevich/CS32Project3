@@ -8,7 +8,7 @@ bool GameWorld::getKey(int& value)
 {
 	bool result = m_controller->getLastKey(value);
 
-	if (value == 'q' || value == '\x03')  // CTRL-C
+	if (result && (value == 'q' || value == '\x03'))  // CTRL-C
 			exit(0);
 
 	return result;
