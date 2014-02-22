@@ -16,7 +16,10 @@ StudentWorld::StudentWorld()
 StudentWorld::~StudentWorld()
 {
 	for (int i = 0; i < (int)actors.size(); i++)
+	{
 		delete actors[i];
+		actors.erase(actors.begin() + (i-1));
+	}
 }
 
 int StudentWorld::init()
@@ -176,6 +179,7 @@ void StudentWorld::cleanUp()
 	for (int i = 0; i < (int)actors.size(); i++)
 	{
 		delete actors[i];
+		actors.erase(actors.begin() + (i-1));
 	}
 }
 
