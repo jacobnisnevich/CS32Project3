@@ -1,11 +1,14 @@
 #ifndef ACTOR_H_
 #define ACTOR_H_
 
+#include <vector>
 #include "GraphObject.h"
 #include "GameConstants.h"
 
 class StudentWorld;
 class Level;
+class BugSprayer;
+class BugSpray;
 
 class GameObject : public GraphObject
 {
@@ -39,11 +42,11 @@ class Player : public Character
 {
 public:
 	Player(StudentWorld* World, int startx, int starty);
-	virtual ~Player() {};
-	void dropBugSprayer() {};
+	virtual ~Player();
+	void dropBugSprayer();
 	virtual void doSomething();
 private:
-	int m_sprayerCount;
+	std::vector<BugSprayer*> m_sprayers;
 };
 
 class Zumi : public Character
@@ -64,6 +67,7 @@ public:
 	Object(StudentWorld* World, int image, int x, int y);
 	virtual bool isComplete() {return false;}
 	virtual ~Object() {};
+	void decreaseTime() {m_lifetime--;}
 };
 
 class Brick : public Object
@@ -112,10 +116,18 @@ public:
 	void decreaseTime() {m_lifetime--;}
 private:
 	int m_lifetime;
+	std::vector<BugSpray*> m_sprays;
 };
 
 class BugSpray : public Object
 {
+public:
+	BugSpray(StudentWorld* World, int x, int y);
+	virtual ~BugSprayer() {};
+	virtual void doSomething();
+	void decreaseTime() {m_lifetime--;}
+private:
+	int m_lifetime;
 };
 
 class Goody : public Object

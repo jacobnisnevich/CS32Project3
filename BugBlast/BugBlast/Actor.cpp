@@ -94,9 +94,17 @@ void Character::onCollision(int x, int y, Level collision, bool& success)
 // Player
 Player::Player(StudentWorld* World, int startx, int starty) : Character(World, IID_PLAYER, startx, starty)
 {
-	m_sprayerCount = 0;
 	setPlayer(true);
 	setVisible(true);
+}
+
+Player::~Player()
+{
+	for (int i = 0; i < (int)m_sprayers.size(); i++)
+	{
+		delete m_sprayers[i];
+	}
+	m_sprayers.clear();
 }
 
 void Player::doSomething()
@@ -107,6 +115,24 @@ void Player::doSomething()
 		move(keyPress);
 	else
 		dropBugSprayer();
+
+	for (int i = 0; i < (int)m_sprayers.size(); i++)
+	{
+		m_sprayers[i]->doSomething();
+		if (!m_sprayers[i]->isAlive())
+		{
+			delete m_sprayers[i];
+			m_sprayers.erase(m_sprayers.begin() + i);
+			break;
+		}
+	}
+}
+
+void Player::dropBugSprayer()
+{
+	if (m_sprayers.size() > 1)
+		return;
+	m_sprayers.push_back(new BugSprayer(getWorld(), getX(), getY()));
 }
 
 // Object
@@ -145,7 +171,7 @@ void Exit::doSomething()
 	{
 		setActive(true);
 	}
-	for (int i = 0; i < getWorld()->getActors().size(); i++)
+	for (int i = 0; i < (int)getWorld()->getActors().size(); i++)
 	{
 		if (getWorld()->getActors()[i]->getID() == IID_PLAYER &&
 			getWorld()->getActors()[i]->getX() == getX() && 
@@ -169,7 +195,7 @@ BugSprayer::BugSprayer(StudentWorld* World, int x, int y) : Object(World, IID_BU
 
 void BugSprayer::doSomething()
 {
-	if (isAlive == false)
+	if (isAlive() == false)
 		return;
 
 	decreaseTime();
@@ -178,6 +204,7 @@ void BugSprayer::doSomething()
 	{
 		// create bugspray
 		getWorld()->playSound(SOUND_SPRAY);
-		setAlive(false);		
+		setAlive(false);
+		setVisible(false);
 	}
 }
