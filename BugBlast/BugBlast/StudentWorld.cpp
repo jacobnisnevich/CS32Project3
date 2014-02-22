@@ -181,33 +181,10 @@ int StudentWorld::getNumZumis() const
 
 std::string StudentWorld::getLevelFile(unsigned int num)
 {
-	switch (num)
-	{
-	case 0:
-		return "level00.dat";
-	case 1:
-		return "level01.dat";
-	case 2:
-		return "level02.dat";
-	case 3:
-		return "level03.dat";
-	case 4:
-		return "level04.dat";
-	case 5:
-		return "level05.dat";
-	case 6:
-		return "level06.dat";
-	case 7:
-		return "level07.dat";
-	case 8:
-		return "level08.dat";
-	case 9:
-		return "level09.dat";
-	case 10:
-		return "level10.dat";
-	default:
-		return "";
-	}
+	std::ostringstream oss;
+	oss.fill('0');
+	oss << "level" << std::setw(2) << num << ".dat";
+	return oss.str();
 }
 
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
