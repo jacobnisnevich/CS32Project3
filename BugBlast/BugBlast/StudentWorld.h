@@ -20,6 +20,8 @@ public:
 	int getNumZumis() const;
 	void setNumZumis(int num);
 	std::string getLevelFile(unsigned int num);
+	std::vector<GameObject*> getActors();
+	int getLevelBonus() {return LevelBonus;}
 private:
 	// level options
 	int ProbOfGoodieOverall;

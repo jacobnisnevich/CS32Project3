@@ -18,6 +18,7 @@ public:
 	virtual bool isPlayer() const;
 	virtual void setPlayer(bool player);
 	StudentWorld* getWorld() const {return m_world;} 
+	virtual bool isComplete() = 0;
 private:
 	StudentWorld* m_world;
 	bool m_player;
@@ -31,6 +32,7 @@ public:
 	virtual void doSomething() = 0;
 	bool move(int dir);
 	void onCollision(int x, int y, Level collision, bool& success);
+	virtual bool isComplete() {return false;}
 };
 
 class Player : public Character
@@ -60,6 +62,7 @@ class Object : public GameObject
 {
 public:
 	Object(StudentWorld* World, int image, int x, int y);
+	virtual bool isComplete() {return false;}
 	virtual ~Object() {};
 };
 
@@ -94,8 +97,10 @@ public:
 	virtual void doSomething();
 	void setActive(bool active) {m_active = active;}
 	bool getActive() const {return m_active;}
+	virtual bool isComplete() {return m_complete;}
 private:
 	bool m_active;
+	bool m_complete;
 };
 
 class BugSprayer : public Object

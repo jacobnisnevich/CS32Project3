@@ -136,13 +136,25 @@ Exit::Exit(StudentWorld* World, int x, int y) : Object(World, IID_EXIT, x, y)
 {
 	setVisible(false);
 	m_active = false;
+	m_complete = false;
 }
 
 void Exit::doSomething()
 {
-	if (getWorld()->getNumZumis() == 0)
+	if (isVisible())
 	{
-		setVisible(true);
 		setActive(true);
+	}
+	for (int i = 0; i < getWorld()->getActors().size(); i++)
+	{
+		if (getWorld()->getActors()[i]->getID() == IID_PLAYER &&
+			getWorld()->getActors()[i]->getX() == getX() && 
+			getWorld()->getActors()[i]->getY() == getY() &&
+			m_active == true)
+		{
+			getWorld()->increaseScore(getWorld()->getLevelBonus());
+			getWorld()->playSound(SOUND_FINISHED_LEVEL);
+			m_complete = true;
+		}
 	}
 }

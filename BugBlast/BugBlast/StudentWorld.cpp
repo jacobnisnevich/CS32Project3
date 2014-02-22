@@ -119,12 +119,17 @@ int StudentWorld::move()
 		//If the Player steps onto the same square as an Exit (after first clearing the 
 		//level of all Zumi) and completes the current level, then the move() method 
 		//should immediately: 
-		if (actors[i]->isPlayer() && lev.getContentsOf(actors[i]->getX(), actors[i]->getY()) == 1)
-		{
-			//Increase the Player’s score by the remaining bonus for the level. 
-			increaseScore(LevelBonus);
-			//Return a value of GWSTATUS_FINISHED_LEVEL. 
+		if (actors[i]->getID() == IID_EXIT && actors[i]->isComplete())
+		{ 
 			return GWSTATUS_FINISHED_LEVEL;
+		}
+		if (actors[i]->getID() == IID_EXIT && getNumZumis() == 0)
+		{
+			if (actors[i]->isVisible() == false)
+			{
+				actors[i]->setVisible(true);
+				playSound(SOUND_REVEAL_EXIT);
+			}
 		}
 	}
 	//It must then delete any actors that have died during this tick (e.g., a Simple Zumi 
@@ -187,4 +192,8 @@ std::string StudentWorld::getLevelFile(unsigned int num)
 	return oss.str();
 }
 
+std::vector<GameObject*> StudentWorld::getActors()
+{
+	return actors;
+}
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
