@@ -105,6 +105,13 @@ private:
 
 class BugSprayer : public Object
 {
+public:
+	BugSprayer(StudentWorld* World, int x, int y);
+	virtual ~BugSprayer() {};
+	virtual void doSomething();
+	void decreaseTime() {m_lifetime--;}
+private:
+	int m_lifetime;
 };
 
 class BugSpray : public Object
