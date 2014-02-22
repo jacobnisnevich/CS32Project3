@@ -158,3 +158,26 @@ void Exit::doSomething()
 		}
 	}
 }
+
+// BugSprayer
+BugSprayer::BugSprayer(StudentWorld* World, int x, int y) : Object(World, IID_BUGSPRAYER, x, y)
+{
+	setVisible(true);
+	setAlive(true);
+	m_lifetime = 40;
+}
+
+void BugSprayer::doSomething()
+{
+	if (isAlive == false)
+		return;
+
+	decreaseTime();
+
+	if (m_lifetime == 0)
+	{
+		// create bugspray
+		getWorld()->playSound(SOUND_SPRAY);
+		setAlive(false);		
+	}
+}
