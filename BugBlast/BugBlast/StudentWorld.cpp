@@ -1,3 +1,5 @@
+#include <sstream>
+#include <iomanip>
 #include "StudentWorld.h"
 
 GameWorld* createStudentWorld()
@@ -13,7 +15,7 @@ StudentWorld::StudentWorld()
 
 StudentWorld::~StudentWorld()
 {
-	for (int i = 0; i < actors.size(); i++)
+	for (int i = 0; i < (int)actors.size(); i++)
 		delete actors[i];
 }
 
@@ -105,7 +107,7 @@ int StudentWorld::move()
 	//something (e.g., ask a Simple Zumi to move itself, ask a Bug Sprayer to count 
 	//down and possibly release Bug Spray into the maze, give the Player a chance to 
 	//move up, down, left or right, or drop a Bug Sprayer in the maze, etc.). 
-	for (int i = 0; i < actors.size(); i++)
+	for (int i = 0; i < (int)actors.size(); i++)
 	{
 		actors[i]->doSomething();
 
@@ -128,7 +130,7 @@ int StudentWorld::move()
 	//It must then delete any actors that have died during this tick (e.g., a Simple Zumi 
 	//that was destroyed by Bug Spray and so should be removed from the game world, 
 	//or a Goodie that disappeared because the Player picked it up). 
-	for (int i = 0; i < actors.size(); i++)
+	for (int i = 0; i < (int)actors.size(); i++)
 	{
 		if (!actors[i]->isAlive())
 		{
@@ -149,10 +151,14 @@ int StudentWorld::move()
 		
 	//It must update the status text on the top of the screen with the latest information 
 	//(e.g., the user’s updated score, the remaining bonus score for the level, etc.). 
-	setGameStatText("Score: " + std::to_string(getScore()) + 
-		" Level: " + std::to_string(getLevel()) + 
-		" Lives: " + std::to_string(getLives()) + 
-		" Bonus: " + std::to_string(LevelBonus));
+
+	std::ostringstream oss;
+	oss.fill('0');
+	oss << "Score: " << std::setw(7) << getScore() <<
+		" Level: " << getLevel() <<
+		" Lives: " << getLives() <<
+		" Bonus: " << LevelBonus;
+	setGameStatText(oss.str());
 
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -162,7 +168,7 @@ void StudentWorld::cleanUp()
 	//Every actor in the entire maze (the Player and every Zumi, Goodies, Bug Sprayers, Bug 
 	//Spray, Bricks, the Exit, etc.) must be deleted and removed from your StudentWorld’s 
 	//container of active objects, resulting in an empty maze.
-	for (int i = 0; i < actors.size(); i++)
+	for (int i = 0; i < (int)actors.size(); i++)
 	{
 		delete actors[i];
 	}
