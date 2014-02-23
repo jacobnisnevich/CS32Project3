@@ -22,10 +22,15 @@ public:
 	virtual void setPlayer(bool player);
 	StudentWorld* getWorld() const {return m_world;} 
 	virtual bool isComplete() = 0;
+	void decreaseTime() {m_lifetime--;}
+	void setTime(int time) {m_lifetime = time;}
+	int getTime() const {return m_lifetime;}
+	GameObject* findObject(int x, int y);
 private:
 	StudentWorld* m_world;
 	bool m_player;
 	bool m_alive;
+	int m_lifetime;
 };
 
 class Character : public GameObject
@@ -34,7 +39,7 @@ public:
 	Character(StudentWorld* World, int image, int startx, int starty);
 	virtual void doSomething() = 0;
 	bool move(int dir);
-	void onCollision(int x, int y, Level collision, bool& success);
+	bool isCollision(int x, int y);
 	virtual bool isComplete() {return false;}
 };
 
@@ -67,7 +72,6 @@ public:
 	Object(StudentWorld* World, int image, int x, int y);
 	virtual bool isComplete() {return false;}
 	virtual ~Object() {};
-	void decreaseTime() {m_lifetime--;}
 };
 
 class Brick : public Object
@@ -99,11 +103,7 @@ public:
 	Exit(StudentWorld* World, int x, int y);
 	virtual ~Exit() {};
 	virtual void doSomething();
-	void setActive(bool active) {m_active = active;}
-	bool getActive() const {return m_active;}
 	virtual bool isComplete() {return m_complete;}
-private:
-	bool m_active;
 	bool m_complete;
 };
 
@@ -111,11 +111,9 @@ class BugSprayer : public Object
 {
 public:
 	BugSprayer(StudentWorld* World, int x, int y);
-	virtual ~BugSprayer() {};
+	virtual ~BugSprayer();
 	virtual void doSomething();
-	void decreaseTime() {m_lifetime--;}
 private:
-	int m_lifetime;
 	std::vector<BugSpray*> m_sprays;
 };
 
@@ -123,11 +121,8 @@ class BugSpray : public Object
 {
 public:
 	BugSpray(StudentWorld* World, int x, int y);
-	virtual ~BugSprayer() {};
+	virtual ~BugSpray() {};
 	virtual void doSomething();
-	void decreaseTime() {m_lifetime--;}
-private:
-	int m_lifetime;
 };
 
 class Goody : public Object

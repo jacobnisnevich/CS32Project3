@@ -45,32 +45,26 @@ bool Character::move(int dir)
 	Level collision;
 	collision.loadLevel(getWorld()->getLevelFile(getWorld()->getLevel()));
 
-	bool moveSuccess = true;
-
 	switch (dir)
 	{
 	case KEY_PRESS_UP:
-		onCollision(getX(), getY() + 1, collision, moveSuccess);
-		if (moveSuccess == false)
-			return moveSuccess;
+		if (!isCollision(getX(), getY() + 1))
+			return false;
 		moveTo(getX(), getY() + 1);
 		break;
 	case KEY_PRESS_DOWN:
-		onCollision(getX(), getY() - 1, collision, moveSuccess);
-		if (moveSuccess == false)
-			return moveSuccess;
+		if (!isCollision(getX(), getY() - 1))
+			return false;
 		moveTo(getX(), getY() - 1);
 		break;
 	case KEY_PRESS_LEFT:
-		onCollision(getX() - 1, getY(), collision, moveSuccess);
-		if (moveSuccess == false)
-			return moveSuccess;
+		if (!isCollision(getX() - 1, getY()))
+			return false;
 		moveTo(getX() - 1, getY());
 		break;
 	case KEY_PRESS_RIGHT:
-		onCollision(getX() + 1, getY(), collision, moveSuccess);
-		if (moveSuccess == false)
-			return moveSuccess;
+		if (!isCollision(getX() + 1, getY()))
+			return false;
 		moveTo(getX() + 1, getY());
 		break;
 	default:
@@ -79,16 +73,23 @@ bool Character::move(int dir)
 	return true;
 }
 
-void Character::onCollision(int x, int y, Level collision, bool& success)
+bool Character::isCollision(int x, int y)
 {
-	if (collision.getContentsOf(x, y) == 5 || collision.getContentsOf(x, y) == 6)
+	GameObject* object = findObject(x, y);
+	if (object == nullptr)
 	{
-		success = false;
+		return true;
 	}
-	else if ((collision.getContentsOf(x, y) == 3 || collision.getContentsOf(x, y) == 4) && this->getID() == IID_PLAYER)
+	if (object->getID() == IID_DESTROYABLE_BRICK || object->getID() == IID_PERMA_BRICK)
+	{
+		return false;
+	}
+	else if ((object->getID() == IID_SIMPLE_ZUMI || object->getID() == IID_COMPLEX_ZUMI) && this->getID() == IID_PLAYER)
 	{
 		this->setAlive(false);
+		return true;
 	}
+	return true;
 }
 
 // Player
@@ -161,7 +162,7 @@ DestructBrick::DestructBrick(StudentWorld* World, int x, int y) : Brick(World, I
 Exit::Exit(StudentWorld* World, int x, int y) : Object(World, IID_EXIT, x, y)
 {
 	setVisible(false);
-	m_active = false;
+	setAlive(false);
 	m_complete = false;
 }
 
@@ -169,14 +170,14 @@ void Exit::doSomething()
 {
 	if (isVisible())
 	{
-		setActive(true);
+		setAlive(true);
 	}
 	for (int i = 0; i < (int)getWorld()->getActors().size(); i++)
 	{
 		if (getWorld()->getActors()[i]->getID() == IID_PLAYER &&
 			getWorld()->getActors()[i]->getX() == getX() && 
 			getWorld()->getActors()[i]->getY() == getY() &&
-			m_active == true)
+			isAlive())
 		{
 			getWorld()->increaseScore(getWorld()->getLevelBonus());
 			getWorld()->playSound(SOUND_FINISHED_LEVEL);
@@ -190,7 +191,16 @@ BugSprayer::BugSprayer(StudentWorld* World, int x, int y) : Object(World, IID_BU
 {
 	setVisible(true);
 	setAlive(true);
-	m_lifetime = 40;
+	setTime(40);
+}
+
+BugSprayer::~BugSprayer()
+{
+	for (int i = 0; i < (int)m_sprays.size(); i++)
+	{
+		delete m_sprays[i];
+	}
+	m_sprays.clear();
 }
 
 void BugSprayer::doSomething()
@@ -200,11 +210,125 @@ void BugSprayer::doSomething()
 
 	decreaseTime();
 
-	if (m_lifetime == 0)
-	{
-		// create bugspray
+	if (getTime() == 0)
+	{		
+		setAlive(false);
+		setVisible(false);
 		getWorld()->playSound(SOUND_SPRAY);
+		m_sprays.push_back(new BugSpray(getWorld(), getX(), getY()));
+		for (int i = 1; i <= 2; i++)
+		{
+			GameObject* object = findObject(getX() + i, getY());
+			if ((object && object->getID() != IID_PERMA_BRICK))
+			{
+				m_sprays.push_back(new BugSpray(getWorld(), getX() + i, getY()));
+				break;
+			}
+			else if (!object)
+				m_sprays.push_back(new BugSpray(getWorld(), getX() + i, getY()));
+			else
+				break;
+		}
+		for (int i = 1; i <= 2; i++)
+		{
+			GameObject* object = findObject(getX() - i, getY());
+			if (object && object->getID() != IID_PERMA_BRICK)
+			{
+				m_sprays.push_back(new BugSpray(getWorld(), getX() - i, getY()));
+				break;
+			}
+			else if (!object)
+				m_sprays.push_back(new BugSpray(getWorld(), getX() - i, getY()));
+			else
+				break;
+		}
+		for (int i = 1; i <= 2; i++)
+		{
+			GameObject* object = findObject(getX(), getY() + i);
+			if (object && object->getID() != IID_PERMA_BRICK)
+			{
+				m_sprays.push_back(new BugSpray(getWorld(), getX(), getY() + i));
+				break;
+			}
+			else if (!object)
+				m_sprays.push_back(new BugSpray(getWorld(), getX(), getY() + i));
+			else
+				break;
+		}
+		for (int i = 1; i <= 2; i++)
+		{
+			GameObject* object = findObject(getX(), getY() - i);
+			if (object && object->getID() != IID_PERMA_BRICK)
+			{
+				m_sprays.push_back(new BugSpray(getWorld(), getX(), getY() - i));
+				break;
+			}
+			else if (!object)
+				m_sprays.push_back(new BugSpray(getWorld(), getX(), getY() - i));
+			else
+				break;
+		}
+	}
+
+	for (int i = 0; i < (int)m_sprays.size(); i++)
+	{
+		m_sprays[i]->doSomething();
+		if (!m_sprays[i]->isAlive())
+		{
+			delete m_sprays[i];
+			m_sprays.erase(m_sprays.begin() + i);
+			break;
+		}
+	}
+}
+
+// BugSpray
+BugSpray::BugSpray(StudentWorld* World, int x, int y) : Object(World, IID_BUGSPRAY, x, y)
+{
+	setVisible(true);
+	setAlive(true);
+	setTime(3);
+}
+
+void BugSpray::doSomething()
+{
+	if (!isAlive())
+		return;
+
+	decreaseTime();
+
+	if (getTime() == 0)
+	{
 		setAlive(false);
 		setVisible(false);
 	}
+
+	GameObject* object = findObject(getX(), getY());
+	if (object)
+	{
+		if (object->getID() == IID_DESTROYABLE_BRICK ||
+			object->getID() == IID_PLAYER ||
+			object->getID() == IID_SIMPLE_ZUMI ||
+			object->getID() == IID_COMPLEX_ZUMI)
+		{
+			object->setAlive(false);
+		}
+		else if (object->getID() == IID_BUGSPRAYER)
+		{
+			object->setTime(0);
+		}
+	}
+}
+
+GameObject* GameObject::findObject(int x, int y)
+{
+	for (int i = 0; i < (int)getWorld()->getActors().size(); i++)
+	{
+		if (getWorld()->getActors()[i]->getX() == x &&
+			getWorld()->getActors()[i]->getY() == y)
+		{
+			return getWorld()->getActors()[i];
+		}
+	}
+	return nullptr;
 }

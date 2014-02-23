@@ -128,7 +128,8 @@ int StudentWorld::move()
 		}
 		if (actors[i]->getID() == IID_EXIT && getNumZumis() == 0)
 		{
-			if (actors[i]->isVisible() == false)
+			actors[i]->setAlive(true);
+			if (!actors[i]->isVisible())
 			{
 				actors[i]->setVisible(true);
 				playSound(SOUND_REVEAL_EXIT);
@@ -147,6 +148,7 @@ int StudentWorld::move()
 			{
 				numZumis--;
 			}
+			actors.erase(actors.begin() + i);
 		}
 	}
 
