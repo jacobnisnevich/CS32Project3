@@ -19,8 +19,10 @@ public:
 	virtual void cleanUp();
 	int getNumZumis() const;
 	void setNumZumis(int num);
+	int getNumSprayers() const {return numSprayers;}
+	void setNumSprayers(int num) {numSprayers = num;}
 	std::string getLevelFile(unsigned int num);
-	std::vector<GameObject*> getActors();
+	std::vector<GameObject*>* getActors();
 	int getLevelBonus() {return LevelBonus;}
 private:
 	// level options
@@ -39,6 +41,7 @@ private:
 	// level objects
 	std::vector<GameObject*> actors;
 	int numZumis;
+	int numSprayers;
 };
 
 #endif // STUDENTWORLD_H_

@@ -11,6 +11,7 @@ StudentWorld::StudentWorld()
 {
 	actors.clear();
 	numZumis = 0;
+	numSprayers = 0;
 }
 
 StudentWorld::~StudentWorld()
@@ -82,12 +83,6 @@ int StudentWorld::init()
 			case 2: // player
 				actors.push_back(new Player(this, x, y));
 				break;
-			case 3: // simple_zumi
-				// to add code here
-				break;
-			case 4: // complex_zumi
-				// to add code here
-				break;
 			case 5: // perma_brick
 				actors.push_back(new PermaBrick(this, x, y));
 				break;
@@ -106,6 +101,7 @@ int StudentWorld::move()
 {
 	Level lev;
 	lev.loadLevel(getLevelFile(getLevel()));
+
 	//It must ask all of the actors that are currently active in the game world to do 
 	//something (e.g., ask a Simple Zumi to move itself, ask a Bug Sprayer to count 
 	//down and possibly release Bug Spray into the maze, give the Player a chance to 
@@ -121,12 +117,13 @@ int StudentWorld::move()
 	
 		//If the Player steps onto the same square as an Exit (after first clearing the 
 		//level of all Zumi) and completes the current level, then the move() method 
-		//should immediately: 
-		if (actors[i]->getID() == IID_EXIT && actors[i]->isComplete())
+		//should immediately:
+		Exit* exit = dynamic_cast<Exit*>(actors[i]);
+		if (exit && actors[i]->isComplete())
 		{ 
 			return GWSTATUS_FINISHED_LEVEL;
 		}
-		if (actors[i]->getID() == IID_EXIT && getNumZumis() == 0)
+		if (exit && getNumZumis() == 0)
 		{
 			actors[i]->setAlive(true);
 			if (!actors[i]->isVisible())
@@ -143,11 +140,22 @@ int StudentWorld::move()
 	{
 		if (!actors[i]->isAlive())
 		{
-			delete actors[i];
-			if (actors[i]->getID() == IID_SIMPLE_ZUMI || actors[i]->getID() == IID_COMPLEX_ZUMI)
+			SimpleZumi* simpzumi = dynamic_cast<SimpleZumi*>(actors[i]);
+			if (simpzumi)
 			{
 				numZumis--;
 			}
+			ComplexZumi* compzumi = dynamic_cast<ComplexZumi*>(actors[i]);
+			if (compzumi)
+			{
+				numZumis--;
+			}
+			BugSprayer* bugsprayer = dynamic_cast<BugSprayer*>(actors[i]);
+			if (bugsprayer)
+			{
+				numSprayers--;
+			}
+			delete actors[i];
 			actors.erase(actors.begin() + i);
 		}
 	}
@@ -198,8 +206,8 @@ std::string StudentWorld::getLevelFile(unsigned int num)
 	return oss.str();
 }
 
-std::vector<GameObject*> StudentWorld::getActors()
+std::vector<GameObject*>* StudentWorld::getActors()
 {
-	return actors;
+	return &actors;
 }
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp

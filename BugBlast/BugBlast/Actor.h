@@ -50,8 +50,6 @@ public:
 	virtual ~Player();
 	void dropBugSprayer();
 	virtual void doSomething();
-private:
-	std::vector<BugSprayer*> m_sprayers;
 };
 
 class Zumi : public Character
@@ -113,8 +111,6 @@ public:
 	BugSprayer(StudentWorld* World, int x, int y);
 	virtual ~BugSprayer();
 	virtual void doSomething();
-private:
-	std::vector<BugSpray*> m_sprays;
 };
 
 class BugSpray : public Object

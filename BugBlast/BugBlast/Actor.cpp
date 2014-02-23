@@ -80,14 +80,30 @@ bool Character::isCollision(int x, int y)
 	{
 		return true;
 	}
-	if (object->getID() == IID_DESTROYABLE_BRICK || object->getID() == IID_PERMA_BRICK)
+
+	// return false if hits brick
+	DestructBrick* destructbrick = dynamic_cast<DestructBrick*>(object);
+	if (destructbrick)
 	{
 		return false;
 	}
-	else if ((object->getID() == IID_SIMPLE_ZUMI || object->getID() == IID_COMPLEX_ZUMI) && this->getID() == IID_PLAYER)
+	PermaBrick* permabrick = dynamic_cast<PermaBrick*>(object);
+	if (permabrick)
+	{
+		return false;
+	}
+
+	// kill player if hits Zumi
+	Player* player = dynamic_cast<Player*>(this);
+	SimpleZumi* simpzumi = dynamic_cast<SimpleZumi*>(object);
+	if (simpzumi && player)
 	{
 		this->setAlive(false);
-		return true;
+	}
+	ComplexZumi* compzumi = dynamic_cast<ComplexZumi*>(object);
+	if (compzumi && player)
+	{
+		this->setAlive(false);
 	}
 	return true;
 }
@@ -101,11 +117,6 @@ Player::Player(StudentWorld* World, int startx, int starty) : Character(World, I
 
 Player::~Player()
 {
-	for (int i = 0; i < (int)m_sprayers.size(); i++)
-	{
-		delete m_sprayers[i];
-	}
-	m_sprayers.clear();
 }
 
 void Player::doSomething()
@@ -116,24 +127,14 @@ void Player::doSomething()
 		move(keyPress);
 	else
 		dropBugSprayer();
-
-	for (int i = 0; i < (int)m_sprayers.size(); i++)
-	{
-		m_sprayers[i]->doSomething();
-		if (!m_sprayers[i]->isAlive())
-		{
-			delete m_sprayers[i];
-			m_sprayers.erase(m_sprayers.begin() + i);
-			break;
-		}
-	}
 }
 
 void Player::dropBugSprayer()
 {
-	if (m_sprayers.size() > 1)
+	if (getWorld()->getNumSprayers() > 1)
 		return;
-	m_sprayers.push_back(new BugSprayer(getWorld(), getX(), getY()));
+	getWorld()->getActors()->push_back(new BugSprayer(getWorld(), getX(), getY()));
+	getWorld()->setNumSprayers(getWorld()->getNumSprayers() + 1);
 }
 
 // Object
@@ -172,11 +173,12 @@ void Exit::doSomething()
 	{
 		setAlive(true);
 	}
-	for (int i = 0; i < (int)getWorld()->getActors().size(); i++)
+	for (int i = 0; i < (int)getWorld()->getActors()->size(); i++)
 	{
-		if (getWorld()->getActors()[i]->getID() == IID_PLAYER &&
-			getWorld()->getActors()[i]->getX() == getX() && 
-			getWorld()->getActors()[i]->getY() == getY() &&
+		Player* player = dynamic_cast<Player*>(this);
+		if (player &&
+			getWorld()->getActors()->at(i)->getX() == getX() && 
+			getWorld()->getActors()->at(i)->getY() == getY() &&
 			isAlive())
 		{
 			getWorld()->increaseScore(getWorld()->getLevelBonus());
@@ -196,11 +198,6 @@ BugSprayer::BugSprayer(StudentWorld* World, int x, int y) : Object(World, IID_BU
 
 BugSprayer::~BugSprayer()
 {
-	for (int i = 0; i < (int)m_sprays.size(); i++)
-	{
-		delete m_sprays[i];
-	}
-	m_sprays.clear();
 }
 
 void BugSprayer::doSomething()
@@ -215,69 +212,62 @@ void BugSprayer::doSomething()
 		setAlive(false);
 		setVisible(false);
 		getWorld()->playSound(SOUND_SPRAY);
-		m_sprays.push_back(new BugSpray(getWorld(), getX(), getY()));
+		getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY()));
 		for (int i = 1; i <= 2; i++)
 		{
 			GameObject* object = findObject(getX() + i, getY());
-			if ((object && object->getID() != IID_PERMA_BRICK))
+			PermaBrick* permabrick = dynamic_cast<PermaBrick*>(object);
+			if ((object && !permabrick))
 			{
-				m_sprays.push_back(new BugSpray(getWorld(), getX() + i, getY()));
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() + i, getY()));
 				break;
 			}
 			else if (!object)
-				m_sprays.push_back(new BugSpray(getWorld(), getX() + i, getY()));
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() + i, getY()));
 			else
 				break;
 		}
 		for (int i = 1; i <= 2; i++)
 		{
 			GameObject* object = findObject(getX() - i, getY());
-			if (object && object->getID() != IID_PERMA_BRICK)
+			PermaBrick* permabrick = dynamic_cast<PermaBrick*>(object);
+			if ((object && !permabrick))
 			{
-				m_sprays.push_back(new BugSpray(getWorld(), getX() - i, getY()));
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() - i, getY()));
 				break;
 			}
 			else if (!object)
-				m_sprays.push_back(new BugSpray(getWorld(), getX() - i, getY()));
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() - i, getY()));
 			else
 				break;
 		}
 		for (int i = 1; i <= 2; i++)
 		{
 			GameObject* object = findObject(getX(), getY() + i);
-			if (object && object->getID() != IID_PERMA_BRICK)
+			PermaBrick* permabrick = dynamic_cast<PermaBrick*>(object);
+			if ((object && !permabrick))
 			{
-				m_sprays.push_back(new BugSpray(getWorld(), getX(), getY() + i));
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() + i));
 				break;
 			}
 			else if (!object)
-				m_sprays.push_back(new BugSpray(getWorld(), getX(), getY() + i));
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() + i));
 			else
 				break;
 		}
 		for (int i = 1; i <= 2; i++)
 		{
 			GameObject* object = findObject(getX(), getY() - i);
-			if (object && object->getID() != IID_PERMA_BRICK)
+			PermaBrick* permabrick = dynamic_cast<PermaBrick*>(object);
+			if ((object && !permabrick))
 			{
-				m_sprays.push_back(new BugSpray(getWorld(), getX(), getY() - i));
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() - i));
 				break;
 			}
 			else if (!object)
-				m_sprays.push_back(new BugSpray(getWorld(), getX(), getY() - i));
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() - i));
 			else
 				break;
-		}
-	}
-
-	for (int i = 0; i < (int)m_sprays.size(); i++)
-	{
-		m_sprays[i]->doSomething();
-		if (!m_sprays[i]->isAlive())
-		{
-			delete m_sprays[i];
-			m_sprays.erase(m_sprays.begin() + i);
-			break;
 		}
 	}
 }
@@ -306,14 +296,28 @@ void BugSpray::doSomething()
 	GameObject* object = findObject(getX(), getY());
 	if (object)
 	{
-		if (object->getID() == IID_DESTROYABLE_BRICK ||
-			object->getID() == IID_PLAYER ||
-			object->getID() == IID_SIMPLE_ZUMI ||
-			object->getID() == IID_COMPLEX_ZUMI)
+		DestructBrick* destructbrick = dynamic_cast<DestructBrick*>(object);
+		if (destructbrick)
 		{
 			object->setAlive(false);
 		}
-		else if (object->getID() == IID_BUGSPRAYER)
+		Player* player = dynamic_cast<Player*>(object);
+		if (player)
+		{
+			object->setAlive(false);
+		}
+		SimpleZumi* simpzumi = dynamic_cast<SimpleZumi*>(object);
+		if (simpzumi)
+		{
+			object->setAlive(false);
+		}
+		ComplexZumi* compzumi = dynamic_cast<ComplexZumi*>(object);
+		if (compzumi)
+		{
+			object->setAlive(false);
+		}
+		BugSprayer* bugsprayer = dynamic_cast<BugSprayer*>(object);
+		if (bugsprayer)
 		{
 			object->setTime(0);
 		}
@@ -322,12 +326,12 @@ void BugSpray::doSomething()
 
 GameObject* GameObject::findObject(int x, int y)
 {
-	for (int i = 0; i < (int)getWorld()->getActors().size(); i++)
+	for (int i = 0; i < (int)getWorld()->getActors()->size(); i++)
 	{
-		if (getWorld()->getActors()[i]->getX() == x &&
-			getWorld()->getActors()[i]->getY() == y)
+		if (getWorld()->getActors()->at(i)->getX() == x &&
+			getWorld()->getActors()->at(i)->getY() == y)
 		{
-			return getWorld()->getActors()[i];
+			return getWorld()->getActors()->at(i);
 		}
 	}
 	return nullptr;
