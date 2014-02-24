@@ -44,6 +44,14 @@ public:
 	virtual ~Player();
 	void dropBugSprayer();
 	virtual void doSomething();
+	void setWalkThrough(bool canwalkthrough) {m_canWalkThrough = canwalkthrough;}
+	bool getWalkThrough() {return m_canWalkThrough;}
+	int getGoodyTime() {return m_walkThroughTime;}
+	void setGoodyTime(int time) {m_walkThroughTime = time;}
+	void decreaseGoodyTime() {m_walkThroughTime--;}
+private:
+	bool m_canWalkThrough;
+	int m_walkThroughTime;
 };
 
 class Zumi : public Character
@@ -166,7 +174,7 @@ class WalkThrough : public TempObject
 public:
 	WalkThrough(StudentWorld* World, int x, int y);
 	virtual ~WalkThrough() {};
-	virtual void doSomething() {};
+	virtual void doSomething();
 };
 
 class IncreaseSprayer : public TempObject

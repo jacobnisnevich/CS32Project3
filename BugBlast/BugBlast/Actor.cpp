@@ -72,8 +72,13 @@ bool Character::isCollision(int x, int y)
 	}
 
 	// return false if hits brick
+	Player* playerThis = dynamic_cast<Player*>(this);
 	DestructBrick* destructbrick = dynamic_cast<DestructBrick*>(object);
-	if (destructbrick)
+	if (destructbrick && playerThis && playerThis->getWalkThrough())
+	{
+		return true;
+	}
+	else if (destructbrick)
 	{
 		return false;
 	}
@@ -84,17 +89,25 @@ bool Character::isCollision(int x, int y)
 	}
 
 	// kill player if hits Zumi
-	Player* player = dynamic_cast<Player*>(this);
-	SimpleZumi* simpzumi = dynamic_cast<SimpleZumi*>(object);
-	if (simpzumi && player)
+	SimpleZumi* simpzumiObject = dynamic_cast<SimpleZumi*>(object);
+	if (simpzumiObject && playerThis)
 	{
 		this->setAlive(false);
 	}
-	ComplexZumi* compzumi = dynamic_cast<ComplexZumi*>(object);
-	if (compzumi && player)
+	ComplexZumi* compzumiObject = dynamic_cast<ComplexZumi*>(object);
+	if (compzumiObject && playerThis)
 	{
 		this->setAlive(false);
 	}
+
+	SimpleZumi* simpzumiThis = dynamic_cast<SimpleZumi*>(this);
+	ComplexZumi* compzumiThis = dynamic_cast<ComplexZumi*>(this);
+	Player* playerObject = dynamic_cast<Player*>(object);
+	if ((simpzumiThis || compzumiThis) && playerObject)
+	{
+		playerObject->setAlive(false);
+	}
+
 	return true;
 }
 
@@ -102,6 +115,7 @@ bool Character::isCollision(int x, int y)
 Player::Player(StudentWorld* World, int startx, int starty) : Character(World, IID_PLAYER, startx, starty)
 {
 	setVisible(true);
+	setWalkThrough(false);
 }
 
 Player::~Player()
@@ -116,6 +130,10 @@ void Player::doSomething()
 		move(keyPress);
 	else
 		dropBugSprayer();
+	if (getGoodyTime() == 0)
+		setWalkThrough(false);
+	if (getWalkThrough())
+		decreaseGoodyTime();
 }
 
 void Player::dropBugSprayer()
@@ -221,7 +239,7 @@ DestructBrick::DestructBrick(StudentWorld* World, int x, int y) : Brick(World, I
 Exit::Exit(StudentWorld* World, int x, int y) : Object(World, IID_EXIT, x, y)
 {
 	setVisible(false);
-	setActive(true);
+	setActive(false);
 	m_complete = false;
 }
 
@@ -395,6 +413,29 @@ WalkThrough::WalkThrough(StudentWorld* World, int x, int y)
 	: TempObject(World, IID_WALK_THRU_GOODIE, x, y, World->getGoodieLifetime())
 {
 	setVisible(true);
+}
+
+void WalkThrough::doSomething()
+{
+	if (!isAlive())
+		return;
+
+	decreaseTime();
+
+	if (getTime() == 0)
+		setAlive(false);
+
+	GameObject* object = findObject(getX(), getY());
+	Player* player = dynamic_cast<Player*>(object);
+	if (player)
+	{
+		player->setWalkThrough(true);
+		player->setGoodyTime(getWorld()->getWalkThruLifetimeTicks());
+		getWorld()->increaseScore(1000);
+		setAlive(false);
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		return;
+	}
 }
 
 IncreaseSprayer::IncreaseSprayer(StudentWorld* World, int x, int y) 

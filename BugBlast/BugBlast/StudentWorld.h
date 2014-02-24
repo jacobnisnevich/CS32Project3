@@ -29,6 +29,7 @@ public:
 	int getWalkThruProb() {return ProbOfWalkThruGoodie;}
 	int getMoreSprayersProb() {return ProbOfMoreSprayersGoodie;}
 	int getGoodieLifetime() {return GoodieLifetimeInTicks;}
+	int getWalkThruLifetimeTicks() {return WalkThruLifetimeTicks;}
 private:
 	// level options
 	int ProbOfGoodieOverall;
