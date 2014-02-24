@@ -24,6 +24,11 @@ public:
 	std::string getLevelFile(unsigned int num);
 	std::vector<GameObject*>* getActors();
 	int getLevelBonus() {return LevelBonus;}
+	int getGoodieProb() {return ProbOfGoodieOverall;}
+	int getExtraLifeProb() {return ProbOfExtraLifeGoodie;}
+	int getWalkThruProb() {return ProbOfWalkThruGoodie;}
+	int getMoreSprayersProb() {return ProbOfMoreSprayersGoodie;}
+	int getGoodieLifetime() {return GoodieLifetimeInTicks;}
 private:
 	// level options
 	int ProbOfGoodieOverall;

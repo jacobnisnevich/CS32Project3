@@ -129,7 +129,6 @@ void Player::dropBugSprayer()
 // Zumi
 Zumi::Zumi(StudentWorld* World, int image, int x, int y, int ticksPerMove) : Character(World, image, x, y)
 {
-	srand(time(NULL));
 	m_ticksPerMove = ticksPerMove;
 	m_ticks = 1;
 	m_currentDirection = getRandomDirection();
@@ -138,6 +137,25 @@ Zumi::Zumi(StudentWorld* World, int image, int x, int y, int ticksPerMove) : Cha
 int Zumi::getRandomDirection()
 {
 	return (rand() % 4 + 1000);
+}
+
+void Zumi::damage(int score)
+{
+	setAlive(false);
+	getWorld()->playSound(SOUND_ENEMY_DIE);
+	getWorld()->increaseScore(score);
+	int totalProb = rand() % 99;
+	if (totalProb < getWorld()->getGoodieProb())
+	{
+		if (totalProb < getWorld()->getExtraLifeProb())
+			getWorld()->getActors()->push_back(new ExtraLife(getWorld(), getX(), getY()));
+		else if (totalProb >= getWorld()->getExtraLifeProb() && 
+			totalProb < (getWorld()->getExtraLifeProb() + getWorld()->getWalkThruProb()))
+			getWorld()->getActors()->push_back(new WalkThrough(getWorld(), getX(), getY()));
+		else if (totalProb >= (getWorld()->getExtraLifeProb() + getWorld()->getWalkThruProb()) && 
+			totalProb < 100)
+			getWorld()->getActors()->push_back(new IncreaseSprayer(getWorld(), getX(), getY()));
+	}
 }
 
 // Simple Zumi
@@ -151,8 +169,9 @@ void SimpleZumi::doSomething()
 {
 	if (!isAlive())
 		return;
-
-	Player* player = dynamic_cast<Player*>(findObject(getX(), getY()));
+	
+	GameObject* object = findObject(getX(), getY());
+	Player* player = dynamic_cast<Player*>(object);
 	if (player)
 	{
 		findObject(getX(), getY())->setAlive(false);
@@ -228,11 +247,10 @@ void Exit::doSomething()
 }
 
 // BugSprayer
-BugSprayer::BugSprayer(StudentWorld* World, int x, int y) : Object(World, IID_BUGSPRAYER, x, y)
+BugSprayer::BugSprayer(StudentWorld* World, int x, int y) : TempObject(World, IID_BUGSPRAYER, x, y, 40)
 {
 	setVisible(true);
 	setAlive(true);
-	setTime(40);
 }
 
 BugSprayer::~BugSprayer()
@@ -246,7 +264,7 @@ void BugSprayer::doSomething()
 
 	decreaseTime();
 
-	if (getTime() == 0)
+	if (getTime() <= 0)
 	{		
 		setAlive(false);
 		setVisible(false);
@@ -312,11 +330,10 @@ void BugSprayer::doSomething()
 }
 
 // BugSpray
-BugSpray::BugSpray(StudentWorld* World, int x, int y) : Object(World, IID_BUGSPRAY, x, y)
+BugSpray::BugSpray(StudentWorld* World, int x, int y) : TempObject(World, IID_BUGSPRAY, x, y, 3)
 {
 	setVisible(true);
 	setAlive(true);
-	setTime(3);
 }
 
 void BugSpray::doSomething()
@@ -348,19 +365,42 @@ void BugSpray::doSomething()
 		SimpleZumi* simpzumi = dynamic_cast<SimpleZumi*>(object);
 		if (simpzumi)
 		{
-			object->setAlive(false);
+			simpzumi->damage(100);
 		}
 		ComplexZumi* compzumi = dynamic_cast<ComplexZumi*>(object);
 		if (compzumi)
 		{
-			object->setAlive(false);
+			compzumi->damage(500);
 		}
 		BugSprayer* bugsprayer = dynamic_cast<BugSprayer*>(object);
 		if (bugsprayer)
 		{
-			object->setTime(0);
+			bugsprayer->setTime(0);
 		}
 	}
+}
+
+TempObject::TempObject(StudentWorld* World, int image, int x, int y, int time) : Object(World, image, x, y)
+{
+	setTime(time);
+}
+
+ExtraLife::ExtraLife(StudentWorld* World, int x, int y) 
+	: TempObject(World, IID_EXTRA_LIFE_GOODIE, x, y, World->getGoodieLifetime())
+{
+	setVisible(true);
+}
+
+WalkThrough::WalkThrough(StudentWorld* World, int x, int y) 
+	: TempObject(World, IID_WALK_THRU_GOODIE, x, y, World->getGoodieLifetime())
+{
+	setVisible(true);
+}
+
+IncreaseSprayer::IncreaseSprayer(StudentWorld* World, int x, int y) 
+	: TempObject(World, IID_INCREASE_SIMULTANEOUS_SPRAYER_GOODIE, x, y, World->getGoodieLifetime())
+{
+	setVisible(true);
 }
 
 GameObject* GameObject::findObject(int x, int y)

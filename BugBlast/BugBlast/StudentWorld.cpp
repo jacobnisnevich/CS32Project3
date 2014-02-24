@@ -25,6 +25,8 @@ StudentWorld::~StudentWorld()
 
 int StudentWorld::init()
 {
+	srand(time(NULL));
+
 	//Initialize the data structures used to keep track of your game’s world
 	actors.clear();
 	numZumis = 0;

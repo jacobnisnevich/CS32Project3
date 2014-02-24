@@ -20,15 +20,11 @@ public:
 	virtual void doSomething() = 0;
 	StudentWorld* getWorld() const {return m_world;} 
 	virtual bool isComplete() = 0;
-	void decreaseTime() {m_lifetime--;}
-	void setTime(int time) {m_lifetime = time;}
-	int getTime() const {return m_lifetime;}
 	GameObject* findObject(int x, int y);
 private:
 	StudentWorld* m_world;
 	bool m_player;
 	bool m_alive;
-	int m_lifetime;
 };
 
 class Character : public GameObject
@@ -61,6 +57,7 @@ public:
 	int getCurrentDirection() const {return m_currentDirection;}
 	void setCurrentDirection(int dir) {m_currentDirection = dir;}
 	int getRandomDirection();
+	void damage(int score);
 private:
 	int m_ticksPerMove;
 	int m_ticks;
@@ -128,7 +125,19 @@ private:
 	bool m_complete;
 };
 
-class BugSprayer : public Object
+class TempObject : public Object
+{
+public:
+	TempObject(StudentWorld* World, int image, int x, int y, int time);
+	virtual ~TempObject() {};
+	void decreaseTime() {m_lifetime--;}
+	void setTime(int time) {m_lifetime = time;}
+	int getTime() const {return m_lifetime;}
+private:
+	int m_lifetime;
+};
+
+class BugSprayer : public TempObject
 {
 public:
 	BugSprayer(StudentWorld* World, int x, int y);
@@ -136,7 +145,7 @@ public:
 	virtual void doSomething();
 };
 
-class BugSpray : public Object
+class BugSpray : public TempObject
 {
 public:
 	BugSpray(StudentWorld* World, int x, int y);
@@ -144,20 +153,28 @@ public:
 	virtual void doSomething();
 };
 
-class Goody : public Object
+class ExtraLife : public TempObject
 {
+public:
+	ExtraLife(StudentWorld* World, int x, int y);
+	virtual ~ExtraLife() {};
+	virtual void doSomething() {};
 };
 
-class ExtraLife : public Goody
+class WalkThrough : public TempObject
 {
+public:
+	WalkThrough(StudentWorld* World, int x, int y);
+	virtual ~WalkThrough() {};
+	virtual void doSomething() {};
 };
 
-class WalkThrough : public Goody
+class IncreaseSprayer : public TempObject
 {
-};
-
-class IncreaseSprayer : public Goody
-{
+public:
+	IncreaseSprayer(StudentWorld* World, int x, int y);
+	virtual ~IncreaseSprayer() {};
+	virtual void doSomething() {};
 };
 
 #endif // ACTOR_H_
