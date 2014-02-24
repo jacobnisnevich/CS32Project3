@@ -28,6 +28,7 @@ int StudentWorld::init()
 	//Initialize the data structures used to keep track of your game’s world
 	actors.clear();
 	numZumis = 0;
+	numSprayers = 0;
 	Level lev;
 
 	//Load the current maze details from a level data file (each level has its own data 
@@ -84,10 +85,12 @@ int StudentWorld::init()
 				actors.push_back(new Player(this, x, y));
 				break;
 			case 3:
-				//actors.push_back(new SimpleZumi(this, x, y));
+				actors.push_back(new SimpleZumi(this, x, y, TicksPerSimpleZumiMove));
+				numZumis++;
 				break;
 			case 4:
-				//actors.push_back(new ComplexZumi(this, x, y));
+				//actors.push_back(new ComplexZumi(this, x, y, TicksPerComplexZumiMove));
+				numZumis++;
 				break;
 			case 5: // perma_brick
 				actors.push_back(new PermaBrick(this, x, y));
@@ -118,8 +121,6 @@ int StudentWorld::move()
 
 		//If an actor does something that causes the Player to die, then the move() 
 		//method should immediately return GWSTATUS_PLAYER_DIED.
-		if (!actors[i]->isAlive() && actors[i]->isPlayer())
-			return GWSTATUS_PLAYER_DIED;
 	
 		//If the Player steps onto the same square as an Exit (after first clearing the 
 		//level of all Zumi) and completes the current level, then the move() method 
@@ -129,7 +130,7 @@ int StudentWorld::move()
 		{ 
 			return GWSTATUS_FINISHED_LEVEL;
 		}
-		if (exit && getNumZumis() == 0)
+		if (exit && numZumis == 0)
 		{
 			actors[i]->setAlive(true);
 			if (!actors[i]->isVisible())
@@ -144,6 +145,13 @@ int StudentWorld::move()
 	//or a Goodie that disappeared because the Player picked it up). 
 	for (int i = 0; i < (int)actors.size(); i++)
 	{
+		Player* player = dynamic_cast<Player*>(actors[i]);
+		if (!(actors[i]->isAlive()) && player)
+		{
+			decLives();
+			return GWSTATUS_PLAYER_DIED;
+		}
+
 		if (!actors[i]->isAlive())
 		{
 			SimpleZumi* simpzumi = dynamic_cast<SimpleZumi*>(actors[i]);
@@ -171,7 +179,8 @@ int StudentWorld::move()
 	//drop to 999. On the second tick it would drop to 998, etc. This declining bonus 
 	//value incentivizes the Player to complete the level as quickly as possible to get the 
 	//biggest bonus score. The level bonus may not go below a value of zero. 
-	LevelBonus--;
+	if (LevelBonus > 0)
+		LevelBonus--;
 		
 	//It must update the status text on the top of the screen with the latest information 
 	//(e.g., the user’s updated score, the remaining bonus score for the level, etc.). 

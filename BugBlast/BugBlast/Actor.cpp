@@ -9,7 +9,6 @@ GameObject::GameObject(StudentWorld* World, int image, int startx, int starty) :
 {
 	m_world = World;
 	m_alive = true;
-	m_player = false;
 }
 
 GameObject::~GameObject()
@@ -21,19 +20,9 @@ bool GameObject::isAlive() const
 	return m_alive;
 }
 
-bool GameObject::isPlayer() const
-{
-	return m_player;
-}
-
 void GameObject::setAlive(bool life)
 {
 	m_alive = life;
-}
-
-void GameObject::setPlayer(bool player)
-{
-	m_player = player;
 }
 
 // Character
@@ -112,7 +101,6 @@ bool Character::isCollision(int x, int y)
 // Player
 Player::Player(StudentWorld* World, int startx, int starty) : Character(World, IID_PLAYER, startx, starty)
 {
-	setPlayer(true);
 	setVisible(true);
 }
 
@@ -141,14 +129,15 @@ void Player::dropBugSprayer()
 // Zumi
 Zumi::Zumi(StudentWorld* World, int image, int x, int y, int ticksPerMove) : Character(World, image, x, y)
 {
+	srand(time(NULL));
 	m_ticksPerMove = ticksPerMove;
-	m_ticks = 0;
+	m_ticks = 1;
+	m_currentDirection = getRandomDirection();
 }
 
 int Zumi::getRandomDirection()
 {
-	srand(time(NULL));
-	return (rand() % 4 + 1);
+	return (rand() % 4 + 1000);
 }
 
 // Simple Zumi
@@ -167,6 +156,18 @@ void SimpleZumi::doSomething()
 	if (player)
 	{
 		findObject(getX(), getY())->setAlive(false);
+	}
+
+	if (getTicks() == getTicksPerMove())
+	{
+		bool success = move(getCurrentDirection());
+		if (!success)
+			setCurrentDirection(getRandomDirection());
+		setTicks(0);
+	}
+	else 
+	{
+		setTicks(getTicks() + 1);
 	}
 }
 
@@ -201,15 +202,15 @@ DestructBrick::DestructBrick(StudentWorld* World, int x, int y) : Brick(World, I
 Exit::Exit(StudentWorld* World, int x, int y) : Object(World, IID_EXIT, x, y)
 {
 	setVisible(false);
-	setAlive(false);
+	setActive(true);
 	m_complete = false;
 }
 
 void Exit::doSomething()
 {
-	if (isVisible() && !isAlive())
+	if (isVisible() && !isActive())
 	{
-		setAlive(true);
+		setActive(true);
 	}
 	for (int i = 0; i < (int)getWorld()->getActors()->size(); i++)
 	{
@@ -217,7 +218,7 @@ void Exit::doSomething()
 		if (player &&
 			getWorld()->getActors()->at(i)->getX() == getX() && 
 			getWorld()->getActors()->at(i)->getY() == getY() &&
-			isAlive())
+			isActive())
 		{
 			getWorld()->increaseScore(getWorld()->getLevelBonus());
 			getWorld()->playSound(SOUND_FINISHED_LEVEL);

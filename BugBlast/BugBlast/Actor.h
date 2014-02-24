@@ -18,8 +18,6 @@ public:
 	virtual bool isAlive() const;
 	virtual void setAlive(bool life);
 	virtual void doSomething() = 0;
-	virtual bool isPlayer() const;
-	virtual void setPlayer(bool player);
 	StudentWorld* getWorld() const {return m_world;} 
 	virtual bool isComplete() = 0;
 	void decreaseTime() {m_lifetime--;}
@@ -82,7 +80,7 @@ class ComplexZumi : public Zumi
 public:
 	ComplexZumi(StudentWorld* World, int x, int y, int ticksPerMove);
 	virtual ~ComplexZumi() {};
-	virtual void doSomething();
+	virtual void doSomething() {};
 };
 
 class Object : public GameObject
@@ -123,6 +121,10 @@ public:
 	virtual ~Exit() {};
 	virtual void doSomething();
 	virtual bool isComplete() {return m_complete;}
+	bool isActive() {return m_active;}
+	void setActive(bool active) {m_active = active;}
+private:
+	bool m_active;
 	bool m_complete;
 };
 
