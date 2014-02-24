@@ -54,14 +54,35 @@ public:
 
 class Zumi : public Character
 {
+public:
+	Zumi(StudentWorld* World, int image, int x, int y, int ticksPerMove);
+	virtual ~Zumi() {};
+	int getTicksPerMove() const {return m_ticksPerMove;}
+	int getTicks() const {return m_ticks;}
+	void setTicks(int ticks) {m_ticks = ticks;}
+	int getCurrentDirection() const {return m_currentDirection;}
+	void setCurrentDirection(int dir) {m_currentDirection = dir;}
+	int getRandomDirection();
+private:
+	int m_ticksPerMove;
+	int m_ticks;
+	int m_currentDirection;
 };
 
 class SimpleZumi : public Zumi
 {
+public:
+	SimpleZumi(StudentWorld* World, int x, int y, int ticksPerMove);
+	virtual ~SimpleZumi() {};
+	virtual void doSomething();
 };
 
 class ComplexZumi : public Zumi
 {
+public:
+	ComplexZumi(StudentWorld* World, int x, int y, int ticksPerMove);
+	virtual ~ComplexZumi() {};
+	virtual void doSomething();
 };
 
 class Object : public GameObject

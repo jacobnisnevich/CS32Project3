@@ -83,6 +83,12 @@ int StudentWorld::init()
 			case 2: // player
 				actors.push_back(new Player(this, x, y));
 				break;
+			case 3:
+				//actors.push_back(new SimpleZumi(this, x, y));
+				break;
+			case 4:
+				//actors.push_back(new ComplexZumi(this, x, y));
+				break;
 			case 5: // perma_brick
 				actors.push_back(new PermaBrick(this, x, y));
 				break;

@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "StudentWorld.h"
+#include <time.h>
 
 // Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
 
@@ -135,6 +136,43 @@ void Player::dropBugSprayer()
 		return;
 	getWorld()->getActors()->push_back(new BugSprayer(getWorld(), getX(), getY()));
 	getWorld()->setNumSprayers(getWorld()->getNumSprayers() + 1);
+}
+
+// Zumi
+Zumi::Zumi(StudentWorld* World, int image, int x, int y, int ticksPerMove) : Character(World, image, x, y)
+{
+	m_ticksPerMove = ticksPerMove;
+	m_ticks = 0;
+}
+
+int Zumi::getRandomDirection()
+{
+	srand(time(NULL));
+	return (rand() % 4 + 1);
+}
+
+// Simple Zumi
+SimpleZumi::SimpleZumi(StudentWorld* World, int x, int y, int ticksPerMove) : Zumi(World, IID_SIMPLE_ZUMI, x, y, ticksPerMove)
+{
+	setVisible(true);
+	setCurrentDirection(getRandomDirection());
+}
+
+void SimpleZumi::doSomething()
+{
+	if (!isAlive())
+		return;
+
+	Player* player = dynamic_cast<Player*>(findObject(getX(), getY()));
+	if (player)
+	{
+		findObject(getX(), getY())->setAlive(false);
+	}
+}
+
+// Complex Zumi
+ComplexZumi::ComplexZumi(StudentWorld* World, int x, int y, int ticksPerMove) : Zumi(World, IID_SIMPLE_ZUMI, x, y, ticksPerMove)
+{
 }
 
 // Object
