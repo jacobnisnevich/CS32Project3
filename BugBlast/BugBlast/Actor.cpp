@@ -169,13 +169,13 @@ Exit::Exit(StudentWorld* World, int x, int y) : Object(World, IID_EXIT, x, y)
 
 void Exit::doSomething()
 {
-	if (isVisible())
+	if (isVisible() && !isAlive())
 	{
 		setAlive(true);
 	}
 	for (int i = 0; i < (int)getWorld()->getActors()->size(); i++)
 	{
-		Player* player = dynamic_cast<Player*>(this);
+		Player* player = dynamic_cast<Player*>(getWorld()->getActors()->at(i));
 		if (player &&
 			getWorld()->getActors()->at(i)->getX() == getX() && 
 			getWorld()->getActors()->at(i)->getY() == getY() &&
