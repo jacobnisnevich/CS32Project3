@@ -44,14 +44,23 @@ public:
 	virtual ~Player();
 	void dropBugSprayer();
 	virtual void doSomething();
+
 	void setWalkThrough(bool canwalkthrough) {m_canWalkThrough = canwalkthrough;}
 	bool getWalkThrough() {return m_canWalkThrough;}
-	int getGoodyTime() {return m_walkThroughTime;}
-	void setGoodyTime(int time) {m_walkThroughTime = time;}
-	void decreaseGoodyTime() {m_walkThroughTime--;}
+	int getWalkThroughTime() {return m_walkThroughTime;}
+	void setWalkThroughTime(int time) {m_walkThroughTime = time;}
+	void decreaseWalkThroughTime() {m_walkThroughTime--;}
+
+	void setIncreaseSprayers(bool increasesprayers) {m_increaseSprayers = increasesprayers;}
+	bool getIncreaseSprayers() {return m_increaseSprayers;}
+	int getSprayerTime() const {return m_increaseSprayersTime;}
+	void setSprayerTime(int time) {m_increaseSprayersTime = time;}
+	void decreaseSprayerTime() {m_increaseSprayersTime--;}
 private:
 	bool m_canWalkThrough;
 	int m_walkThroughTime;
+	bool m_increaseSprayers;
+	int m_increaseSprayersTime;
 };
 
 class Zumi : public Character
@@ -166,7 +175,7 @@ class ExtraLife : public TempObject
 public:
 	ExtraLife(StudentWorld* World, int x, int y);
 	virtual ~ExtraLife() {};
-	virtual void doSomething() {};
+	virtual void doSomething();
 };
 
 class WalkThrough : public TempObject
@@ -182,7 +191,7 @@ class IncreaseSprayer : public TempObject
 public:
 	IncreaseSprayer(StudentWorld* World, int x, int y);
 	virtual ~IncreaseSprayer() {};
-	virtual void doSomething() {};
+	virtual void doSomething();
 };
 
 #endif // ACTOR_H_

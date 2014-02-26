@@ -130,15 +130,22 @@ void Player::doSomething()
 		move(keyPress);
 	else
 		dropBugSprayer();
-	if (getGoodyTime() == 0)
+	if (getWalkThroughTime() == 0)
 		setWalkThrough(false);
 	if (getWalkThrough())
-		decreaseGoodyTime();
+		decreaseWalkThroughTime();
+	if (getSprayerTime() == 0)
+	{
+		setSprayerTime(false);
+		getWorld()->setMaxSprayer(getWorld()->getMaxSprayer() - 1);
+	}
+	if (getIncreaseSprayers())
+		decreaseSprayerTime();
 }
 
 void Player::dropBugSprayer()
 {
-	if (getWorld()->getNumSprayers() > 1)
+	if (getWorld()->getNumSprayers() >= getWorld()->getMaxSprayer())
 		return;
 	getWorld()->getActors()->push_back(new BugSprayer(getWorld(), getX(), getY()));
 	getWorld()->setNumSprayers(getWorld()->getNumSprayers() + 1);
@@ -409,6 +416,28 @@ ExtraLife::ExtraLife(StudentWorld* World, int x, int y)
 	setVisible(true);
 }
 
+void ExtraLife::doSomething()
+{
+	if (!isAlive())
+		return;
+
+	decreaseTime();
+
+	if (getTime() == 0)
+		setAlive(false);
+
+	GameObject* object = findObject(getX(), getY());
+	Player* player = dynamic_cast<Player*>(object);
+	if (player)
+	{
+		getWorld()->incLives();
+		getWorld()->increaseScore(1000);
+		setAlive(false);
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		return;
+	}
+}
+
 WalkThrough::WalkThrough(StudentWorld* World, int x, int y) 
 	: TempObject(World, IID_WALK_THRU_GOODIE, x, y, World->getGoodieLifetime())
 {
@@ -430,7 +459,7 @@ void WalkThrough::doSomething()
 	if (player)
 	{
 		player->setWalkThrough(true);
-		player->setGoodyTime(getWorld()->getWalkThruLifetimeTicks());
+		player->setWalkThroughTime(getWorld()->getWalkThruLifetimeTicks());
 		getWorld()->increaseScore(1000);
 		setAlive(false);
 		getWorld()->playSound(SOUND_GOT_GOODIE);
@@ -442,6 +471,30 @@ IncreaseSprayer::IncreaseSprayer(StudentWorld* World, int x, int y)
 	: TempObject(World, IID_INCREASE_SIMULTANEOUS_SPRAYER_GOODIE, x, y, World->getGoodieLifetime())
 {
 	setVisible(true);
+}
+
+void IncreaseSprayer::doSomething()
+{
+	if (!isAlive())
+		return;
+
+	decreaseTime();
+
+	if (getTime() == 0)
+		setAlive(false);
+
+	GameObject* object = findObject(getX(), getY());
+	Player* player = dynamic_cast<Player*>(object);
+	if (player)
+	{
+		player->setIncreaseSprayers(true);
+		getWorld()->setMaxSprayer(getWorld()->getMaxSprayer() + 1);
+		player->setSprayerTime(getWorld()->getBoostedSprayerLifetimeTicks());
+		getWorld()->increaseScore(1000);
+		setAlive(false);
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		return;
+	}
 }
 
 GameObject* GameObject::findObject(int x, int y)
