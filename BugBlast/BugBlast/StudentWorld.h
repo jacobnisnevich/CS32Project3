@@ -19,10 +19,13 @@ public:
 	virtual void cleanUp();
 	int getNumZumis() const;
 	void setNumZumis(int num);
-	int getNumSprayers() const {return numSprayers;}
-	void setNumSprayers(int num) {numSprayers = num;}
+	int getNumSprayers() const {return m_numSprayers;}
+	void setNumSprayers(int num) {m_numSprayers = num;}
+	int getMaxSprayer() const {return m_maxSprayers;}
+	void setMaxSprayer(int num) {m_maxSprayers = num;}
 	std::string getLevelFile(unsigned int num);
 	std::vector<GameObject*>* getActors();
+
 	int getLevelBonus() {return LevelBonus;}
 	int getGoodieProb() {return ProbOfGoodieOverall;}
 	int getExtraLifeProb() {return ProbOfExtraLifeGoodie;}
@@ -30,6 +33,7 @@ public:
 	int getMoreSprayersProb() {return ProbOfMoreSprayersGoodie;}
 	int getGoodieLifetime() {return GoodieLifetimeInTicks;}
 	int getWalkThruLifetimeTicks() {return WalkThruLifetimeTicks;}
+	int getBoostedSprayerLifetimeTicks() {return BoostedSprayerLifetimeTicks;}
 private:
 	// level options
 	int ProbOfGoodieOverall;
@@ -46,8 +50,9 @@ private:
 
 	// level objects
 	std::vector<GameObject*> actors;
-	int numZumis;
-	int numSprayers;
+	int m_numZumis;
+	int m_numSprayers;
+	int m_maxSprayers;
 };
 
 #endif // STUDENTWORLD_H_

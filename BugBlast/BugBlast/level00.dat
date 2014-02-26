@@ -1,7 +1,7 @@
 probOfGoodieOverall=100 
 probOfExtraLifeGoodie=0 
-probOfWalkThruGoodie=100 
-probOfMoreSprayersGoodie=0 
+probOfWalkThruGoodie=100
+probOfMoreSprayersGoodie=0
 ticksPerSimpleZumiMove=5 
 ticksPerComplexZumiMove=10 
 goodieLifetimeInTicks=40 

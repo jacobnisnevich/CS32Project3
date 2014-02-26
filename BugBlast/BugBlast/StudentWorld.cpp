@@ -10,8 +10,9 @@ GameWorld* createStudentWorld()
 StudentWorld::StudentWorld()
 {
 	actors.clear();
-	numZumis = 0;
-	numSprayers = 0;
+	m_numZumis = 0;
+	m_numSprayers = 0;
+	m_maxSprayers = 2;
 }
 
 StudentWorld::~StudentWorld()
@@ -29,8 +30,9 @@ int StudentWorld::init()
 
 	//Initialize the data structures used to keep track of your game’s world
 	actors.clear();
-	numZumis = 0;
-	numSprayers = 0;
+	m_numZumis = 0;
+	m_numSprayers = 0;
+	m_maxSprayers = 2;
 	Level lev;
 
 	//Load the current maze details from a level data file (each level has its own data 
@@ -72,9 +74,9 @@ int StudentWorld::init()
 	//Allocate and insert any other Simple and Complex Zumi objects, Brick objects, or 
 	//Exit objects into the game world, as required by the specification in the current 
 	//level’s data file. 
-	for (int x = 0; x < 15; x++)
+	for (int x = 0; x < VIEW_HEIGHT; x++)
 	{
-		for (int y = 0; y < 15; y++)
+		for (int y = 0; y < VIEW_WIDTH; y++)
 		{
 			switch (lev.getContentsOf(x, y))
 			{
@@ -88,11 +90,11 @@ int StudentWorld::init()
 				break;
 			case 3:
 				actors.push_back(new SimpleZumi(this, x, y, TicksPerSimpleZumiMove));
-				numZumis++;
+				m_numZumis++;
 				break;
 			case 4:
 				//actors.push_back(new ComplexZumi(this, x, y, TicksPerComplexZumiMove));
-				numZumis++;
+				m_numZumis++;
 				break;
 			case 5: // perma_brick
 				actors.push_back(new PermaBrick(this, x, y));
@@ -132,7 +134,7 @@ int StudentWorld::move()
 		{ 
 			return GWSTATUS_FINISHED_LEVEL;
 		}
-		if (exit && numZumis == 0)
+		if (exit && m_numZumis == 0)
 		{
 			actors[i]->setAlive(true);
 			if (!actors[i]->isVisible())
@@ -159,17 +161,17 @@ int StudentWorld::move()
 			SimpleZumi* simpzumi = dynamic_cast<SimpleZumi*>(actors[i]);
 			if (simpzumi)
 			{
-				numZumis--;
+				m_numZumis--;
 			}
 			ComplexZumi* compzumi = dynamic_cast<ComplexZumi*>(actors[i]);
 			if (compzumi)
 			{
-				numZumis--;
+				m_numZumis--;
 			}
 			BugSprayer* bugsprayer = dynamic_cast<BugSprayer*>(actors[i]);
 			if (bugsprayer)
 			{
-				numSprayers--;
+				m_numSprayers--;
 			}
 			delete actors[i];
 			actors.erase(actors.begin() + i);
@@ -212,7 +214,7 @@ void StudentWorld::cleanUp()
 
 int StudentWorld::getNumZumis() const
 {
-	return numZumis;
+	return m_numZumis;
 }
 
 std::string StudentWorld::getLevelFile(unsigned int num)

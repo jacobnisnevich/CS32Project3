@@ -218,6 +218,7 @@ void SimpleZumi::doSomething()
 // Complex Zumi
 ComplexZumi::ComplexZumi(StudentWorld* World, int x, int y, int ticksPerMove) : Zumi(World, IID_SIMPLE_ZUMI, x, y, ticksPerMove)
 {
+	setVisible(true);
 }
 
 // Object
