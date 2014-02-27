@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 #include <time.h>
+#include <queue>
 
 // Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
 
@@ -88,6 +89,26 @@ bool Character::isCollision(int x, int y)
 		return false;
 	}
 
+	SimpleZumi* simpzumiThis = dynamic_cast<SimpleZumi*>(this);
+	ComplexZumi* compzumiThis = dynamic_cast<ComplexZumi*>(this);
+	
+	BugSprayer* sprayer = dynamic_cast<BugSprayer*>(this);
+	if ((simpzumiThis || compzumiThis) && sprayer)
+	{
+		return false;
+	}
+	BugSpray* spray = dynamic_cast<BugSpray*>(this);
+	if ((simpzumiThis || compzumiThis) && spray)
+	{
+		return false;
+	}
+
+	// kill player if zumi hits it
+	Player* playerObject = dynamic_cast<Player*>(object);
+	if ((simpzumiThis || compzumiThis) && playerObject)
+	{
+		playerObject->setAlive(false);
+	}
 	// kill player if hits Zumi
 	SimpleZumi* simpzumiObject = dynamic_cast<SimpleZumi*>(object);
 	if (simpzumiObject && playerThis)
@@ -98,14 +119,6 @@ bool Character::isCollision(int x, int y)
 	if (compzumiObject && playerThis)
 	{
 		this->setAlive(false);
-	}
-
-	SimpleZumi* simpzumiThis = dynamic_cast<SimpleZumi*>(this);
-	ComplexZumi* compzumiThis = dynamic_cast<ComplexZumi*>(this);
-	Player* playerObject = dynamic_cast<Player*>(object);
-	if ((simpzumiThis || compzumiThis) && playerObject)
-	{
-		playerObject->setAlive(false);
 	}
 
 	return true;
@@ -137,7 +150,7 @@ void Player::doSomething()
 	if (getSprayerTime() == 0)
 	{
 		setSprayerTime(false);
-		getWorld()->setMaxSprayer(getWorld()->getMaxSprayer() - 1);
+		getWorld()->setMaxSprayer(getWorld()->getMaxSprayer() - (getWorld()->getMaxBoostedSprayers() - 2));
 	}
 	if (getIncreaseSprayers())
 		decreaseSprayerTime();
@@ -216,9 +229,147 @@ void SimpleZumi::doSomething()
 }
 
 // Complex Zumi
-ComplexZumi::ComplexZumi(StudentWorld* World, int x, int y, int ticksPerMove) : Zumi(World, IID_SIMPLE_ZUMI, x, y, ticksPerMove)
+ComplexZumi::ComplexZumi(StudentWorld* World, int x, int y, int ticksPerMove) : Zumi(World, IID_COMPLEX_ZUMI, x, y, ticksPerMove)
 {
 	setVisible(true);
+	setCurrentDirection(getRandomDirection());
+}
+
+void ComplexZumi::doSomething()
+{
+	if (!isAlive())
+		return;
+	
+	GameObject* object = findObject(getX(), getY());
+	Player* player = dynamic_cast<Player*>(object);
+	if (player)
+	{
+		findObject(getX(), getY())->setAlive(false);
+	}
+
+	if (getTicks() == getTicksPerMove())
+	{
+		for (int i = 0; i < getWorld()->getActors()->size(); i++)
+		{
+			Player* player = dynamic_cast<Player*>(getWorld()->getActors()->at(i));
+			if (player)
+			{
+				int horizDistance = abs(player->getX() - getX()); 
+				int vertDistance = abs(player->getY() - getY());
+				int smellDistance = getWorld()->getComplexZumiSearchDistance();
+
+				if (horizDistance <= smellDistance && vertDistance <= smellDistance)
+				{
+					int dir = search(getX(), getY(), player->getX(), player->getY());
+					if (dir == -1);
+					{
+						move(dir);
+						setTicks(0);
+						return;
+					}
+				}
+				break;
+			}
+		}
+		bool success = move(getCurrentDirection());
+		if (!success)
+			setCurrentDirection(getRandomDirection());
+		setTicks(0);
+	}
+	else 
+	{
+		setTicks(getTicks() + 1);
+	}
+}
+
+class Coord
+{
+public:
+	Coord(int xx, int yy, int dir) : m_x(xx), m_y(yy), m_dir(dir) {}
+	int x() const { return m_x; }
+	int y() const { return m_y; }
+	int dir() const {return m_dir;}
+private:
+	int m_x;
+	int m_y;
+	int m_dir;
+};
+
+int ComplexZumi::search(int startX, int startY, int playerX, int playerY)
+{
+	std::queue<Coord> moves;
+	char maze[VIEW_WIDTH][VIEW_HEIGHT];
+
+	Coord start(startX, startY, 0);
+	moves.push(start);
+	maze[startX][startY] = '#';
+
+	while (!moves.empty())
+	{
+		Coord tempCoord = moves.front();
+		moves.pop();
+		if (tempCoord.x() == playerX && tempCoord.y() == playerY)
+			return tempCoord.dir();
+		if (!isBrick(tempCoord.x() - 1,tempCoord.y()) && maze[tempCoord.x() - 1][tempCoord.y()] != '#')
+		{
+			maze[tempCoord.x() - 1][tempCoord.y()] = '#';
+			if (tempCoord.dir() == 0)
+			{
+				Coord pushCoord(tempCoord.x() - 1, tempCoord.y(), KEY_PRESS_LEFT);
+				moves.push(pushCoord);
+			}
+			else
+			{
+				Coord pushCoord(tempCoord.x() - 1, tempCoord.y(), tempCoord.dir());
+				moves.push(pushCoord);
+			}
+		}
+		if (!isBrick(tempCoord.x(),tempCoord.y() + 1) && maze[tempCoord.x()][tempCoord.y() + 1] != '#')
+		{
+			maze[tempCoord.x()][tempCoord.y() + 1] = '#';
+			if (tempCoord.dir() == 0)
+			{
+				Coord pushCoord(tempCoord.x(), tempCoord.y() + 1, KEY_PRESS_UP);
+				moves.push(pushCoord);
+			}
+			else
+			{
+				Coord pushCoord(tempCoord.x(), tempCoord.y() + 1, tempCoord.dir());
+				moves.push(pushCoord);
+			}
+		}
+		if (!isBrick(tempCoord.x() + 1,tempCoord.y()) && maze[tempCoord.x() + 1][tempCoord.y()] != '#')
+		{
+			maze[tempCoord.x()+1][tempCoord.y()] = '#';
+			if (tempCoord.dir() == 0)
+			{
+				Coord pushCoord(tempCoord.x() + 1, tempCoord.y(), KEY_PRESS_RIGHT);
+				moves.push(pushCoord);
+			}
+			else
+			{
+				Coord pushCoord(tempCoord.x() + 1, tempCoord.y(), tempCoord.dir());
+				moves.push(pushCoord);
+			}
+		}
+		if (!isBrick(tempCoord.x(),tempCoord.y() + 1)
+			&& maze[tempCoord.x()][tempCoord.y() - 1] != '#')
+		{
+			maze[tempCoord.x()][tempCoord.y() - 1] = '#';
+			if (tempCoord.dir() == 0)
+			{
+				Coord pushCoord(tempCoord.x(), tempCoord.y() - 1, KEY_PRESS_DOWN);
+				moves.push(pushCoord);
+			}
+			else
+			{
+				Coord pushCoord(tempCoord.x(), tempCoord.y() - 1, tempCoord.dir());
+				moves.push(pushCoord);
+			}
+		}
+	}
+
+	return -1;
 }
 
 // Object
@@ -489,7 +640,7 @@ void IncreaseSprayer::doSomething()
 	if (player)
 	{
 		player->setIncreaseSprayers(true);
-		getWorld()->setMaxSprayer(getWorld()->getMaxSprayer() + 1);
+		getWorld()->setMaxSprayer(getWorld()->getMaxSprayer() + getWorld()->getMaxBoostedSprayers());
 		player->setSprayerTime(getWorld()->getBoostedSprayerLifetimeTicks());
 		getWorld()->increaseScore(1000);
 		setAlive(false);
@@ -509,4 +660,33 @@ GameObject* GameObject::findObject(int x, int y)
 		}
 	}
 	return nullptr;
+}
+
+bool GameObject::isEmpty(int x, int y)
+{
+	GameObject* object = findObject(x, y);
+	if (!object)
+		return true;
+	else 
+		return false;
+}
+
+bool GameObject::isPlayer(int x, int y)
+{
+	GameObject* object = findObject(x, y);
+	Player* player = dynamic_cast<Player*>(object);
+	if (player)
+		return true;
+	else
+		return false;
+}
+
+bool GameObject::isBrick(int x, int y)
+{
+	GameObject* object = findObject(x, y);
+	Brick* brick = dynamic_cast<Brick*>(object);
+	if (brick)
+		return true;
+	else
+		return false;
 }

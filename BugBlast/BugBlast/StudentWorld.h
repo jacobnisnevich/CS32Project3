@@ -34,6 +34,8 @@ public:
 	int getGoodieLifetime() {return GoodieLifetimeInTicks;}
 	int getWalkThruLifetimeTicks() {return WalkThruLifetimeTicks;}
 	int getBoostedSprayerLifetimeTicks() {return BoostedSprayerLifetimeTicks;}
+	int getMaxBoostedSprayers() {return MaxBoostedSprayers;}
+	int getComplexZumiSearchDistance() {return ComplexZumiSearchDistance;}
 private:
 	// level options
 	int ProbOfGoodieOverall;
@@ -47,6 +49,7 @@ private:
 	int WalkThruLifetimeTicks;
 	int BoostedSprayerLifetimeTicks;
 	int MaxBoostedSprayers;
+	int ComplexZumiSearchDistance;
 
 	// level objects
 	std::vector<GameObject*> actors;

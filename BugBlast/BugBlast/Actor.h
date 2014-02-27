@@ -21,6 +21,9 @@ public:
 	StudentWorld* getWorld() const {return m_world;} 
 	virtual bool isComplete() = 0;
 	GameObject* findObject(int x, int y);
+	bool isEmpty(int x, int y);
+	bool isPlayer(int x, int y);
+	bool isBrick(int x, int y);
 private:
 	StudentWorld* m_world;
 	bool m_player;
@@ -94,7 +97,8 @@ class ComplexZumi : public Zumi
 public:
 	ComplexZumi(StudentWorld* World, int x, int y, int ticksPerMove);
 	virtual ~ComplexZumi() {};
-	virtual void doSomething() {};
+	virtual void doSomething();
+	int search(int startX, int startY, int playerX, int playerY);
 };
 
 class Object : public GameObject

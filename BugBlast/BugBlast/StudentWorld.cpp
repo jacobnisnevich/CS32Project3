@@ -68,6 +68,7 @@ int StudentWorld::init()
 	WalkThruLifetimeTicks = lev.getOptionValue(optionWalkThruLifetimeTicks);
 	BoostedSprayerLifetimeTicks = lev.getOptionValue(optionBoostedSprayerLifetimeTicks);
 	MaxBoostedSprayers = lev.getOptionValue(optionMaxBoostedSprayers);
+	ComplexZumiSearchDistance = lev.getOptionValue(optionComplexZumiSearchDistance);
 
 
 	//Allocate and insert a valid Player object into the game world.
@@ -93,7 +94,7 @@ int StudentWorld::init()
 				m_numZumis++;
 				break;
 			case 4:
-				//actors.push_back(new ComplexZumi(this, x, y, TicksPerComplexZumiMove));
+				actors.push_back(new ComplexZumi(this, x, y, TicksPerComplexZumiMove));
 				m_numZumis++;
 				break;
 			case 5: // perma_brick
