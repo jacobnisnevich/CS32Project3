@@ -92,12 +92,12 @@ bool Character::isCollision(int x, int y)
 	SimpleZumi* simpzumiThis = dynamic_cast<SimpleZumi*>(this);
 	ComplexZumi* compzumiThis = dynamic_cast<ComplexZumi*>(this);
 	
-	BugSprayer* sprayer = dynamic_cast<BugSprayer*>(this);
+	BugSprayer* sprayer = dynamic_cast<BugSprayer*>(object);
 	if ((simpzumiThis || compzumiThis) && sprayer)
 	{
 		return false;
 	}
-	BugSpray* spray = dynamic_cast<BugSpray*>(this);
+	BugSpray* spray = dynamic_cast<BugSpray*>(object);
 	if ((simpzumiThis || compzumiThis) && spray)
 	{
 		return false;
@@ -139,14 +139,20 @@ void Player::doSomething()
 {
 	int keyPress;
 	getWorld()->getKey(keyPress);
+
+	GameObject* object = findSprayerObject(getX(), getY());
+	BugSprayer* sprayer = dynamic_cast<BugSprayer*>(object);
+
 	if (keyPress != KEY_PRESS_SPACE)
 		move(keyPress);
-	else
+	else if (keyPress == KEY_PRESS_SPACE && !sprayer)
 		dropBugSprayer();
+
 	if (getWalkThroughTime() == 0)
 		setWalkThrough(false);
 	if (getWalkThrough())
 		decreaseWalkThroughTime();
+
 	if (getSprayerTime() == 0)
 	{
 		setSprayerTime(false);
@@ -655,6 +661,21 @@ GameObject* GameObject::findObject(int x, int y)
 	{
 		if (getWorld()->getActors()->at(i)->getX() == x &&
 			getWorld()->getActors()->at(i)->getY() == y)
+		{
+			return getWorld()->getActors()->at(i);
+		}
+	}
+	return nullptr;
+}
+
+GameObject* GameObject::findSprayerObject(int x, int y)
+{
+	for (int i = 0; i < (int)getWorld()->getActors()->size(); i++)
+	{
+		BugSprayer* bugsprayer = dynamic_cast<BugSprayer*>(getWorld()->getActors()->at(i));
+
+		if (getWorld()->getActors()->at(i)->getX() == x &&
+			getWorld()->getActors()->at(i)->getY() == y && bugsprayer)
 		{
 			return getWorld()->getActors()->at(i);
 		}

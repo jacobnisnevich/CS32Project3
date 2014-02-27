@@ -25,6 +25,7 @@ public:
 	void setMaxSprayer(int num) {m_maxSprayers = num;}
 	std::string getLevelFile(unsigned int num);
 	std::vector<GameObject*>* getActors();
+	Player* getPlayer();
 
 	int getLevelBonus() {return LevelBonus;}
 	int getGoodieProb() {return ProbOfGoodieOverall;}

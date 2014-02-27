@@ -144,6 +144,14 @@ int StudentWorld::move()
 				playSound(SOUND_REVEAL_EXIT);
 			}
 		}
+
+		// if player on brick after walkthrough runs out, kill it
+		DestructBrick* brick = dynamic_cast<DestructBrick*>(actors[i]);
+		Player* player = getPlayer();
+		if (brick && brick->getX() == player->getX() && brick->getY() == player->getY() && !player->getWalkThrough())
+		{
+			player->setAlive(false);
+		}
 	}
 	//It must then delete any actors that have died during this tick (e.g., a Simple Zumi 
 	//that was destroyed by Bug Spray and so should be removed from the game world, 
@@ -229,5 +237,16 @@ std::string StudentWorld::getLevelFile(unsigned int num)
 std::vector<GameObject*>* StudentWorld::getActors()
 {
 	return &actors;
+}
+
+Player* StudentWorld::getPlayer()
+{
+	for (int i = 0; i < (int)actors.size(); i++)
+	{
+		Player* player = dynamic_cast<Player*>(actors[i]);
+		if (player)
+			return player;
+	}
+	return nullptr;
 }
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp

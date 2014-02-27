@@ -21,6 +21,7 @@ public:
 	StudentWorld* getWorld() const {return m_world;} 
 	virtual bool isComplete() = 0;
 	GameObject* findObject(int x, int y);
+	GameObject* findSprayerObject(int x, int y);
 	bool isEmpty(int x, int y);
 	bool isPlayer(int x, int y);
 	bool isBrick(int x, int y);
