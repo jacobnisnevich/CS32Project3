@@ -35,6 +35,7 @@ class Character : public GameObject
 {
 public:
 	Character(StudentWorld* World, int image, int startx, int starty);
+	virtual ~Character() {};
 	virtual void doSomething() = 0;
 	bool move(int dir);
 	bool isCollision(int x, int y);

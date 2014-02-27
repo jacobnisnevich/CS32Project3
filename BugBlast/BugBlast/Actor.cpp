@@ -72,13 +72,13 @@ bool Character::isCollision(int x, int y)
 		return true;
 	}
 
-	// return false if hits brick
 	Player* playerThis = dynamic_cast<Player*>(this);
 	DestructBrick* destructbrick = dynamic_cast<DestructBrick*>(object);
 	if (destructbrick && playerThis && playerThis->getWalkThrough())
 	{
 		return true;
 	}
+	// return false if hits brick
 	else if (destructbrick)
 	{
 		return false;
@@ -94,11 +94,6 @@ bool Character::isCollision(int x, int y)
 	
 	BugSprayer* sprayer = dynamic_cast<BugSprayer*>(object);
 	if ((simpzumiThis || compzumiThis) && sprayer)
-	{
-		return false;
-	}
-	BugSpray* spray = dynamic_cast<BugSpray*>(object);
-	if ((simpzumiThis || compzumiThis) && spray)
 	{
 		return false;
 	}
