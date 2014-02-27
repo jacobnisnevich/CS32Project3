@@ -124,6 +124,7 @@ Player::Player(StudentWorld* World, int startx, int starty) : Character(World, I
 {
 	setVisible(true);
 	setWalkThrough(false);
+	setIncreaseSprayers(false);
 }
 
 Player::~Player()
@@ -183,7 +184,7 @@ void Zumi::damage(int score)
 	setAlive(false);
 	getWorld()->playSound(SOUND_ENEMY_DIE);
 	getWorld()->increaseScore(score);
-	int totalProb = rand() % 99;
+	int totalProb = rand() % 101;
 	if (totalProb < getWorld()->getGoodieProb())
 	{
 		if (totalProb < getWorld()->getExtraLifeProb())
