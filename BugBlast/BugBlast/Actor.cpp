@@ -214,7 +214,7 @@ void SimpleZumi::doSomething()
 	Player* player = dynamic_cast<Player*>(object);
 	if (player)
 	{
-		findObject(getX(), getY())->setAlive(false);
+		object->setAlive(false);
 	}
 
 	if (getTicks() == getTicksPerMove())
@@ -263,7 +263,7 @@ void ComplexZumi::doSomething()
 				if (horizDistance <= smellDistance && vertDistance <= smellDistance)
 				{
 					int dir = search(getX(), getY(), player->getX(), player->getY());
-					if (dir == -1);
+					if (dir != -1);
 					{
 						move(dir);
 						setTicks(0);
@@ -453,57 +453,61 @@ void BugSprayer::doSomething()
 		{
 			GameObject* object = findObject(getX() + i, getY());
 			PermaBrick* permabrick = dynamic_cast<PermaBrick*>(object);
-			if ((object && !permabrick))
+			DestructBrick* destructbrick = dynamic_cast<DestructBrick*>(object);
+			if (destructbrick)
 			{
 				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() + i, getY()));
 				break;
 			}
-			else if (!object)
-				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() + i, getY()));
-			else
+			else if (permabrick)
 				break;
+			else
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() + i, getY()));
 		}
 		for (int i = 1; i <= 2; i++)
 		{
 			GameObject* object = findObject(getX() - i, getY());
 			PermaBrick* permabrick = dynamic_cast<PermaBrick*>(object);
-			if ((object && !permabrick))
+			DestructBrick* destructbrick = dynamic_cast<DestructBrick*>(object);
+			if (destructbrick)
 			{
 				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() - i, getY()));
 				break;
 			}
-			else if (!object)
-				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() - i, getY()));
-			else
+			else if (permabrick)
 				break;
+			else
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX() - i, getY()));
 		}
 		for (int i = 1; i <= 2; i++)
 		{
 			GameObject* object = findObject(getX(), getY() + i);
 			PermaBrick* permabrick = dynamic_cast<PermaBrick*>(object);
-			if ((object && !permabrick))
+			DestructBrick* destructbrick = dynamic_cast<DestructBrick*>(object);
+			if (destructbrick)
 			{
 				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() + i));
 				break;
 			}
-			else if (!object)
-				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() + i));
-			else
+			else if (permabrick)
 				break;
+			else
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() + i));
 		}
 		for (int i = 1; i <= 2; i++)
 		{
 			GameObject* object = findObject(getX(), getY() - i);
 			PermaBrick* permabrick = dynamic_cast<PermaBrick*>(object);
-			if ((object && !permabrick))
+			DestructBrick* destructbrick = dynamic_cast<DestructBrick*>(object);
+			if (destructbrick)
 			{
 				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() - i));
 				break;
 			}
-			else if (!object)
-				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() - i));
-			else
+			else if (permabrick)
 				break;
+			else
+				getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY() - i));
 		}
 	}
 }
