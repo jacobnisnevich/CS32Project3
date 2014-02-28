@@ -16,11 +16,13 @@ GameObject::~GameObject()
 {
 }
 
+// return if the object is alive
 bool GameObject::isAlive() const
 {
 	return m_alive;
 }
 
+// set the object's alive state
 void GameObject::setAlive(bool life)
 {
 	m_alive = life;
@@ -31,11 +33,10 @@ Character::Character(StudentWorld* World, int image, int startx, int starty) : G
 {
 }
 
+// primary move function for all Characterse
 bool Character::move(int dir)
 {
-	Level collision;
-	collision.loadLevel(getWorld()->getLevelFile(getWorld()->getLevel()));
-
+	// get keyinput and call respective collision and moveTo functions
 	switch (dir)
 	{
 	case KEY_PRESS_UP:
@@ -61,17 +62,21 @@ bool Character::move(int dir)
 	default:
 		break;
 	}
+	
+	// return true by default
 	return true;
 }
 
 bool Character::isCollision(int x, int y)
 {
+	// if it is null return
 	GameObject* object = findObject(x, y);
 	if (object == nullptr)
 	{
 		return true;
 	}
 
+	// if player has walkthrough power up let it walk through
 	Player* playerThis = dynamic_cast<Player*>(this);
 	DestructBrick* destructbrick = dynamic_cast<DestructBrick*>(object);
 	if (destructbrick && playerThis && playerThis->getWalkThrough())
@@ -92,6 +97,7 @@ bool Character::isCollision(int x, int y)
 	SimpleZumi* simpzumiThis = dynamic_cast<SimpleZumi*>(this);
 	ComplexZumi* compzumiThis = dynamic_cast<ComplexZumi*>(this);
 	
+	// zumis can't walk through sprayers
 	BugSprayer* sprayer = dynamic_cast<BugSprayer*>(object);
 	if ((simpzumiThis || compzumiThis) && sprayer)
 	{
@@ -133,22 +139,25 @@ Player::~Player()
 
 void Player::doSomething()
 {
+	// get user input for keypress
 	int keyPress;
 	getWorld()->getKey(keyPress);
 
 	GameObject* object = findSprayerObject(getX(), getY());
 	BugSprayer* sprayer = dynamic_cast<BugSprayer*>(object);
 
+	// if user presses key other than space move, otherwise drop sprayer
 	if (keyPress != KEY_PRESS_SPACE)
 		move(keyPress);
+	// if a spayer exists at the player's position do not drop a sprayer
 	else if (keyPress == KEY_PRESS_SPACE && !sprayer)
 		dropBugSprayer();
 
+	// adjust the power up times anbd effects appropriately
 	if (getWalkThroughTime() == 0)
 		setWalkThrough(false);
 	if (getWalkThrough())
 		decreaseWalkThroughTime();
-
 	if (getSprayerTime() == 0)
 	{
 		setSprayerTime(false);
@@ -158,10 +167,14 @@ void Player::doSomething()
 		decreaseSprayerTime();
 }
 
+// creates new bugsprayer at player's postion
 void Player::dropBugSprayer()
 {
+	// if it limit, return immediately
 	if (getWorld()->getNumSprayers() >= getWorld()->getMaxSprayer())
 		return;
+	
+	// create new sprayer and increment count
 	getWorld()->getActors()->push_back(new BugSprayer(getWorld(), getX(), getY()));
 	getWorld()->setNumSprayers(getWorld()->getNumSprayers() + 1);
 }
@@ -174,17 +187,23 @@ Zumi::Zumi(StudentWorld* World, int image, int x, int y, int ticksPerMove) : Cha
 	m_currentDirection = getRandomDirection();
 }
 
+// get random number between 1000 and 1003 inclusive
 int Zumi::getRandomDirection()
 {
 	return (rand() % 4 + 1000);
 }
 
+// zumi death function
 void Zumi::damage(int score)
 {
+	// set the Zumi to be dead
 	setAlive(false);
+	// play correct sound and increase score
 	getWorld()->playSound(SOUND_ENEMY_DIE);
 	getWorld()->increaseScore(score);
+	// find random number from 0 to 100
 	int totalProb = rand() % 101;
+	// drop appropriate goodie
 	if (totalProb < getWorld()->getGoodieProb())
 	{
 		if (totalProb < getWorld()->getExtraLifeProb())
@@ -207,9 +226,11 @@ SimpleZumi::SimpleZumi(StudentWorld* World, int x, int y, int ticksPerMove) : Zu
 
 void SimpleZumi::doSomething()
 {
+	// if its dead return
 	if (!isAlive())
 		return;
 	
+	// kill player if he is on same position
 	GameObject* object = findObject(getX(), getY());
 	Player* player = dynamic_cast<Player*>(object);
 	if (player)
@@ -217,13 +238,16 @@ void SimpleZumi::doSomething()
 		object->setAlive(false);
 	}
 
+	// make move in current direction or pick a new move
 	if (getTicks() == getTicksPerMove())
 	{
 		bool success = move(getCurrentDirection());
 		if (!success)
 			setCurrentDirection(getRandomDirection());
+		// reset ticks
 		setTicks(0);
 	}
+	// increment ticks
 	else 
 	{
 		setTicks(getTicks() + 1);
@@ -239,9 +263,11 @@ ComplexZumi::ComplexZumi(StudentWorld* World, int x, int y, int ticksPerMove) : 
 
 void ComplexZumi::doSomething()
 {
+	// if dead return
 	if (!isAlive())
 		return;
 	
+	// kill player if he is on same position
 	GameObject* object = findObject(getX(), getY());
 	Player* player = dynamic_cast<Player*>(object);
 	if (player)
@@ -249,8 +275,10 @@ void ComplexZumi::doSomething()
 		findObject(getX(), getY())->setAlive(false);
 	}
 
+	// if the Zumi should move this turn
 	if (getTicks() == getTicksPerMove())
 	{
+		// check if player is within smell distance
 		for (int i = 0; i < getWorld()->getActors()->size(); i++)
 		{
 			Player* player = dynamic_cast<Player*>(getWorld()->getActors()->at(i));
@@ -262,7 +290,9 @@ void ComplexZumi::doSomething()
 
 				if (horizDistance <= smellDistance && vertDistance <= smellDistance)
 				{
+					// call breadth-first search function
 					int dir = search(getX(), getY(), player->getX(), player->getY());
+					// if result is valid move there and return
 					if (dir != -1);
 					{
 						move(dir);
@@ -273,17 +303,21 @@ void ComplexZumi::doSomething()
 				break;
 			}
 		}
+		// if search failed, move in current direction or random new one
 		bool success = move(getCurrentDirection());
 		if (!success)
 			setCurrentDirection(getRandomDirection());
+		// reset number of ticks
 		setTicks(0);
 	}
 	else 
 	{
+		// increment number of ticks
 		setTicks(getTicks() + 1);
 	}
 }
 
+// class for breadth-first search queue
 class Coord
 {
 public:
@@ -299,78 +333,110 @@ private:
 
 int ComplexZumi::search(int startX, int startY, int playerX, int playerY)
 {
+	// Create a queue of coordinates
 	std::queue<Coord> moves;
+	// Create a 15 by 15 char array to represent the maze
 	char maze[VIEW_WIDTH][VIEW_HEIGHT];
 
+	// Push the start coordinates and an invalid direction into the queue
 	Coord start(startX, startY, 0);
 	moves.push(start);
+	// Mark the start with a # to represent bread crumbs
 	maze[startX][startY] = '#';
 
+	// While the queue is not empty
 	while (!moves.empty())
 	{
+		// Pop the first coordinate
 		Coord tempCoord = moves.front();
 		moves.pop();
+		// If the coordinate’s position is the position of the player
 		if (tempCoord.x() == playerX && tempCoord.y() == playerY)
+			// Return the direction
 			return tempCoord.dir();
-		if (!isBrick(tempCoord.x() - 1,tempCoord.y()) && maze[tempCoord.x() - 1][tempCoord.y()] != '#')
+		// If the coordinate to the left is not a brick and the array is not marked
+		if (!isBrick(tempCoord.x() - 1,tempCoord.y()) && maze[tempCoord.x() - 1][tempCoord.y()] != '#' &&
+			tempCoord.x() - 1 >= 0 && tempCoord.x() - 1 <= 15 && tempCoord.y() >= 0 && tempCoord.y() <= 15)
 		{
+			// Mark the array with a #
 			maze[tempCoord.x() - 1][tempCoord.y()] = '#';
+			// If the coordinates direction is invalid
 			if (tempCoord.dir() == 0)
 			{
+				// Push the coordinate to the queue with the left direction
 				Coord pushCoord(tempCoord.x() - 1, tempCoord.y(), KEY_PRESS_LEFT);
 				moves.push(pushCoord);
 			}
 			else
 			{
+				// Push the coordinate to the queue with its current direction
 				Coord pushCoord(tempCoord.x() - 1, tempCoord.y(), tempCoord.dir());
 				moves.push(pushCoord);
 			}
 		}
-		if (!isBrick(tempCoord.x(),tempCoord.y() + 1) && maze[tempCoord.x()][tempCoord.y() + 1] != '#')
+		// If the coordinate to the top is not a brick and the array is not marked
+		if (!isBrick(tempCoord.x(),tempCoord.y() + 1) && maze[tempCoord.x()][tempCoord.y() + 1] != '#' &&
+			tempCoord.x() >= 0 && tempCoord.x() <= 15 && tempCoord.y() + 1 >= 0 && tempCoord.y() + 1 <= 15)
 		{
+			// Mark the array with a #
 			maze[tempCoord.x()][tempCoord.y() + 1] = '#';
+			// If the coordinates direction is invalid
 			if (tempCoord.dir() == 0)
 			{
+				// Push the coordinate to the queue with the up direction
 				Coord pushCoord(tempCoord.x(), tempCoord.y() + 1, KEY_PRESS_UP);
 				moves.push(pushCoord);
 			}
 			else
 			{
+				// Push the coordinate to the queue with its current direction
 				Coord pushCoord(tempCoord.x(), tempCoord.y() + 1, tempCoord.dir());
 				moves.push(pushCoord);
 			}
 		}
-		if (!isBrick(tempCoord.x() + 1,tempCoord.y()) && maze[tempCoord.x() + 1][tempCoord.y()] != '#')
+		// If the coordinate to the right is not a brick and the array is not marked
+		if (!isBrick(tempCoord.x() + 1,tempCoord.y()) && maze[tempCoord.x() + 1][tempCoord.y()] != '#' &&
+			tempCoord.x() + 1 >= 0 && tempCoord.x() + 1 <= 15 && tempCoord.y() >= 0 && tempCoord.y() <= 15)
 		{
+			// Mark the array with a #
 			maze[tempCoord.x()+1][tempCoord.y()] = '#';
+			// If the coordinates direction is invalid
 			if (tempCoord.dir() == 0)
 			{
+				// Push the coordinate to the queue with the right direction
 				Coord pushCoord(tempCoord.x() + 1, tempCoord.y(), KEY_PRESS_RIGHT);
 				moves.push(pushCoord);
 			}
 			else
 			{
+				// Push the coordinate to the queue with its current direction
 				Coord pushCoord(tempCoord.x() + 1, tempCoord.y(), tempCoord.dir());
 				moves.push(pushCoord);
 			}
 		}
-		if (!isBrick(tempCoord.x(),tempCoord.y() + 1)
-			&& maze[tempCoord.x()][tempCoord.y() - 1] != '#')
+		// If the coordinate to the bottom is not a brick and the array is not marked
+		if (!isBrick(tempCoord.x(),tempCoord.y() + 1) && maze[tempCoord.x()][tempCoord.y() - 1] != '#' &&
+			tempCoord.x() >= 0 && tempCoord.x() <= 15 && tempCoord.y() + 1 >= 0 && tempCoord.y() + 1 <= 15)
 		{
+			// Mark the array with a #
 			maze[tempCoord.x()][tempCoord.y() - 1] = '#';
+			// If the coordinates direction is invalid
 			if (tempCoord.dir() == 0)
 			{
+				// Push the coordinate to the queue with the down direction
 				Coord pushCoord(tempCoord.x(), tempCoord.y() - 1, KEY_PRESS_DOWN);
 				moves.push(pushCoord);
 			}
 			else
 			{
+				// Push the coordinate to the queue with its current direction
 				Coord pushCoord(tempCoord.x(), tempCoord.y() - 1, tempCoord.dir());
 				moves.push(pushCoord);
 			}
 		}
 	}
 
+	// Return -1 to indicate an invalid direction
 	return -1;
 }
 
@@ -406,10 +472,12 @@ Exit::Exit(StudentWorld* World, int x, int y) : Object(World, IID_EXIT, x, y)
 
 void Exit::doSomething()
 {
+	// if it is visible but not active set it to be active
 	if (isVisible() && !isActive())
 	{
 		setActive(true);
 	}
+	// if player steps on exit and the exit is active, set it as complete
 	for (int i = 0; i < (int)getWorld()->getActors()->size(); i++)
 	{
 		Player* player = dynamic_cast<Player*>(getWorld()->getActors()->at(i));
@@ -438,16 +506,23 @@ BugSprayer::~BugSprayer()
 
 void BugSprayer::doSomething()
 {
+	// If the BugSprayer is not alive return
 	if (isAlive() == false)
 		return;
 
+	// Decrement its lifetime by 1
 	decreaseTime();
 
+	// If the lifetime is less than or equal to zero detonate it
 	if (getTime() <= 0)
 	{		
 		setAlive(false);
 		setVisible(false);
 		getWorld()->playSound(SOUND_SPRAY);
+		// Create up to 2 BugSprays in each direction, 
+		// stop immediately if it hits a PermaBrick, 
+		// if it hits a DestructBrick, 
+		// do not place any more in this direction
 		getWorld()->getActors()->push_back(new BugSpray(getWorld(), getX(), getY()));
 		for (int i = 1; i <= 2; i++)
 		{
@@ -521,17 +596,22 @@ BugSpray::BugSpray(StudentWorld* World, int x, int y) : TempObject(World, IID_BU
 
 void BugSpray::doSomething()
 {
+	// If the BugSpray is not alive, return
 	if (!isAlive())
 		return;
 
+	// Decrement its lifetime by 1
 	decreaseTime();
 
+	// If the lifetime is equal to zero kill it
 	if (getTime() == 0)
 	{
 		setAlive(false);
 		setVisible(false);
 	}
 
+	// if the spray is on a player, a zumi, a destructible brick kill it
+	// if the spray is on a bugsprayer, detonate it next tick
 	GameObject* object = findObject(getX(), getY());
 	if (object)
 	{
@@ -576,18 +656,23 @@ ExtraLife::ExtraLife(StudentWorld* World, int x, int y)
 
 void ExtraLife::doSomething()
 {
+	// if its not alive return
 	if (!isAlive())
 		return;
 
+	// decrease lifetime by 1
 	decreaseTime();
 
+	// if lifetime runs out, kill it
 	if (getTime() == 0)
 		setAlive(false);
 
+	// if the goodie is on a player
 	GameObject* object = findObject(getX(), getY());
 	Player* player = dynamic_cast<Player*>(object);
 	if (player)
 	{
+		// increase lives and score, kill the goodie, play the sound
 		getWorld()->incLives();
 		getWorld()->increaseScore(1000);
 		setAlive(false);
@@ -604,18 +689,24 @@ WalkThrough::WalkThrough(StudentWorld* World, int x, int y)
 
 void WalkThrough::doSomething()
 {
+	// if its not alive return
 	if (!isAlive())
 		return;
 
+	// decrease lifetime by 1
 	decreaseTime();
 
+	// if lifetime runs out, kill it
 	if (getTime() == 0)
 		setAlive(false);
 
+	// if the goodie is on a player
 	GameObject* object = findObject(getX(), getY());
 	Player* player = dynamic_cast<Player*>(object);
 	if (player)
 	{
+		// set the players walkthrough and give it a lifetime,
+		// kill the goodie, play the sound
 		player->setWalkThrough(true);
 		player->setWalkThroughTime(getWorld()->getWalkThruLifetimeTicks());
 		getWorld()->increaseScore(1000);
@@ -633,18 +724,24 @@ IncreaseSprayer::IncreaseSprayer(StudentWorld* World, int x, int y)
 
 void IncreaseSprayer::doSomething()
 {
+	// if its not alive retur
 	if (!isAlive())
 		return;
 
+	// decrease lifetime by 1
 	decreaseTime();
 
+	// if lifetime runs out, kill it
 	if (getTime() == 0)
 		setAlive(false);
 
+	// if the goodie is on a player
 	GameObject* object = findObject(getX(), getY());
 	Player* player = dynamic_cast<Player*>(object);
 	if (player)
 	{
+		// set the world's max number of sprayers and give it a lifetime,
+		// kill the goodie, play the sound
 		player->setIncreaseSprayers(true);
 		getWorld()->setMaxSprayer(getWorld()->getMaxSprayer() + getWorld()->getMaxBoostedSprayers());
 		player->setSprayerTime(getWorld()->getBoostedSprayerLifetimeTicks());
@@ -657,11 +754,13 @@ void IncreaseSprayer::doSomething()
 
 GameObject* GameObject::findObject(int x, int y)
 {
+	// loop through actors array
 	for (int i = 0; i < (int)getWorld()->getActors()->size(); i++)
 	{
 		if (getWorld()->getActors()->at(i)->getX() == x &&
 			getWorld()->getActors()->at(i)->getY() == y)
 		{
+			// return a pointer to the actor if its coordinates match parameters
 			return getWorld()->getActors()->at(i);
 		}
 	}
@@ -670,6 +769,7 @@ GameObject* GameObject::findObject(int x, int y)
 
 GameObject* GameObject::findSprayerObject(int x, int y)
 {
+	// loop through actors array
 	for (int i = 0; i < (int)getWorld()->getActors()->size(); i++)
 	{
 		BugSprayer* bugsprayer = dynamic_cast<BugSprayer*>(getWorld()->getActors()->at(i));
@@ -677,6 +777,8 @@ GameObject* GameObject::findSprayerObject(int x, int y)
 		if (getWorld()->getActors()->at(i)->getX() == x &&
 			getWorld()->getActors()->at(i)->getY() == y && bugsprayer)
 		{
+			// return a pointer to the actor if its coordinates match parameters
+			// and the actor is a sprayer
 			return getWorld()->getActors()->at(i);
 		}
 	}
@@ -685,7 +787,9 @@ GameObject* GameObject::findSprayerObject(int x, int y)
 
 bool GameObject::isEmpty(int x, int y)
 {
+	// find the object at  x, y
 	GameObject* object = findObject(x, y);
+	// if there is no object return true
 	if (!object)
 		return true;
 	else 
@@ -694,8 +798,10 @@ bool GameObject::isEmpty(int x, int y)
 
 bool GameObject::isPlayer(int x, int y)
 {
+	// find the object at  x, y
 	GameObject* object = findObject(x, y);
 	Player* player = dynamic_cast<Player*>(object);
+	// if it is a player
 	if (player)
 		return true;
 	else
@@ -704,8 +810,10 @@ bool GameObject::isPlayer(int x, int y)
 
 bool GameObject::isBrick(int x, int y)
 {
+	// find the object at  x, y
 	GameObject* object = findObject(x, y);
 	Brick* brick = dynamic_cast<Brick*>(object);
+	// if it is a brick
 	if (brick)
 		return true;
 	else

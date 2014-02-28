@@ -57,6 +57,7 @@ int StudentWorld::init()
 	if (result != Level::load_fail_file_not_found && result == Level::load_fail_bad_format)
 		return GWSTATUS_LEVEL_ERROR;
 
+	// set the level data
 	ProbOfGoodieOverall = lev.getOptionValue(optionProbOfGoodieOverall);
 	ProbOfExtraLifeGoodie = lev.getOptionValue(optionProbOfExtraLifeGoodie);
 	ProbOfWalkThruGoodie = lev.getOptionValue(optionProbOfWalkThruGoodie);
@@ -158,6 +159,7 @@ int StudentWorld::move()
 	//or a Goodie that disappeared because the Player picked it up). 
 	for (int i = 0; i < (int)actors.size(); i++)
 	{
+		// kill the player
 		Player* player = dynamic_cast<Player*>(actors[i]);
 		if (!(actors[i]->isAlive()) && player)
 		{
@@ -165,6 +167,7 @@ int StudentWorld::move()
 			return GWSTATUS_PLAYER_DIED;
 		}
 
+		// do the necessary death functions
 		if (!actors[i]->isAlive())
 		{
 			SimpleZumi* simpzumi = dynamic_cast<SimpleZumi*>(actors[i]);
@@ -221,11 +224,13 @@ void StudentWorld::cleanUp()
 	actors.clear();
 }
 
+// returns the number of zumis
 int StudentWorld::getNumZumis() const
 {
 	return m_numZumis;
 }
 
+// find the string of the level file
 std::string StudentWorld::getLevelFile(unsigned int num)
 {
 	std::ostringstream oss;
@@ -234,11 +239,13 @@ std::string StudentWorld::getLevelFile(unsigned int num)
 	return oss.str();
 }
 
+// return a pointer to the actors vector
 std::vector<GameObject*>* StudentWorld::getActors()
 {
 	return &actors;
 }
 
+// find the player and return a pointer to it
 Player* StudentWorld::getPlayer()
 {
 	for (int i = 0; i < (int)actors.size(); i++)

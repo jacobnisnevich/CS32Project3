@@ -17,16 +17,24 @@ public:
 	virtual int init();
 	virtual int move();
 	virtual void cleanUp();
+
+	// number of zumis helpers
 	int getNumZumis() const;
 	void setNumZumis(int num);
+
+	// number of sprayers helpers
 	int getNumSprayers() const {return m_numSprayers;}
 	void setNumSprayers(int num) {m_numSprayers = num;}
+
+	// max sprayers helpers
 	int getMaxSprayer() const {return m_maxSprayers;}
 	void setMaxSprayer(int num) {m_maxSprayers = num;}
+
 	std::string getLevelFile(unsigned int num);
 	std::vector<GameObject*>* getActors();
 	Player* getPlayer();
 
+	// level data helper functions
 	int getLevelBonus() {return LevelBonus;}
 	int getGoodieProb() {return ProbOfGoodieOverall;}
 	int getExtraLifeProb() {return ProbOfExtraLifeGoodie;}
